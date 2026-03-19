@@ -12,54 +12,93 @@ body { font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #f5f4f
 .logo { padding: 0 16px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.1); margin-bottom: 8px; }
 .logo-title { font-size: 14px; font-weight: 500; }
 .logo-sub { font-size: 11px; color: #888; }
-.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; color: #555; transition: background 0.15s; }
+.nav-item { display: flex; align-items: center; gap: 8px; padding: 8px 16px; cursor: pointer; font-size: 13px; color: #555; transition: background 0.15s; user-select: none; }
 .nav-item:hover { background: #f5f4f0; color: #1a1a18; }
 .nav-item.active { background: #f5f4f0; color: #1a1a18; font-weight: 500; border-left: 2px solid #185FA5; }
 .main { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
 .topbar { background: #fff; border-bottom: 0.5px solid rgba(0,0,0,0.1); padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 .page-title { font-size: 15px; font-weight: 500; }
+.content { padding: 20px 24px; flex: 1; }
+
+/* Buttons */
 .btn { background: transparent; border: 0.5px solid rgba(0,0,0,0.25); border-radius: 8px; padding: 6px 14px; font-size: 13px; cursor: pointer; color: #1a1a18; transition: background 0.15s; font-family: inherit; }
 .btn:hover { background: #f5f4f0; }
 .btn-primary { background: #185FA5; color: white; border-color: #185FA5; }
-.btn-primary:hover { background: #0C447C; }
-.content { padding: 20px 24px; flex: 1; }
-.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+.btn-primary:hover { background: #0C447C; border-color: #0C447C; }
+.btn-sm { padding: 4px 10px; font-size: 12px; }
+
+/* Metrics */
+.metrics { display: grid; gap: 12px; margin-bottom: 20px; }
+.metrics-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.metrics-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .metric-card { background: #eeeee8; border-radius: 8px; padding: 1rem; }
 .metric-label { font-size: 12px; color: #666; margin-bottom: 6px; }
 .metric-value { font-size: 22px; font-weight: 500; }
 .metric-sub { font-size: 11px; color: #888; margin-top: 4px; }
+
+/* Sections */
 .section { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-.section-header { padding: 14px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; }
+.section-header { padding: 14px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .section-title { font-size: 13px; font-weight: 500; }
-table { width: 100%; border-collapse: collapse; font-size: 13px; table-layout: fixed; }
-th { text-align: left; padding: 8px 16px; font-size: 11px; font-weight: 500; color: #888; border-bottom: 0.5px solid rgba(0,0,0,0.1); background: #f9f9f7; }
-td { padding: 10px 16px; border-bottom: 0.5px solid rgba(0,0,0,0.07); color: #1a1a18; vertical-align: middle; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 8px 12px; font-size: 11px; font-weight: 500; color: #888; border-bottom: 0.5px solid rgba(0,0,0,0.1); background: #f9f9f7; white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 0.5px solid rgba(0,0,0,0.07); color: #1a1a18; vertical-align: middle; }
 tr:last-child td { border-bottom: none; }
 tr:hover td { background: #f9f9f7; }
-.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; }
-.badge-info { background: #E6F1FB; color: #0C447C; }
+.empty-state { text-align: center; padding: 40px 20px; color: #aaa; font-size: 13px; }
+
+/* Badges */
+.badge { display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px; font-weight: 500; white-space: nowrap; }
+.badge-info    { background: #E6F1FB; color: #0C447C; }
 .badge-success { background: #EAF3DE; color: #27500A; }
 .badge-warning { background: #FAEEDA; color: #633806; }
-.badge-danger { background: #FCEBEB; color: #791F1F; }
-.badge-gray { background: #F1EFE8; color: #444441; }
+.badge-danger  { background: #FCEBEB; color: #791F1F; }
+.badge-gray    { background: #F1EFE8; color: #444441; }
+
+/* Progress */
+.progress-wrap { background: #eeeee8; border-radius: 4px; height: 6px; overflow: hidden; margin-top: 4px; }
+.progress-bar  { height: 100%; border-radius: 4px; background: #185FA5; }
+
+/* Modal */
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.show { display: flex; }
-.modal { background: #fff; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.1); width: 520px; max-width: 95vw; max-height: 90vh; overflow-y: auto; }
-.modal-header { padding: 16px 20px; border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+.modal { background: #fff; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.1); width: 760px; max-width: 97vw; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; }
+.modal-header { padding: 16px 20px; border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 1; flex-shrink: 0; }
 .modal-title { font-size: 14px; font-weight: 500; }
-.modal-body { padding: 20px; }
-.modal-footer { padding: 12px 20px; border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; gap: 8px; justify-content: flex-end; }
+.modal-body { padding: 20px; flex: 1; }
+.modal-footer { padding: 12px 20px; border-top: 0.5px solid rgba(0,0,0,0.1); display: flex; gap: 8px; justify-content: flex-end; position: sticky; bottom: 0; background: #fff; flex-shrink: 0; }
 .close-btn { background: none; border: none; font-size: 18px; cursor: pointer; color: #888; padding: 0 4px; }
+
+/* Forms */
 .form-group { margin-bottom: 14px; }
 .form-label { display: block; font-size: 12px; color: #666; margin-bottom: 5px; }
 input, select, textarea { width: 100%; padding: 7px 10px; border: 0.5px solid rgba(0,0,0,0.25); border-radius: 8px; font-size: 13px; background: #fff; color: #1a1a18; font-family: inherit; }
-textarea { resize: vertical; min-height: 70px; }
-.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.empty-state { text-align: center; padding: 40px 20px; color: #aaa; font-size: 13px; }
-.delete-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; font-family: inherit; }
-.delete-btn:hover { color: #A32D2D; background: #FCEBEB; }
-.edit-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 13px; padding: 2px 6px; border-radius: 4px; font-family: inherit; }
-.edit-btn:hover { color: #185FA5; background: #E6F1FB; }
+input:focus, select:focus, textarea:focus { outline: none; border-color: #185FA5; }
+textarea { resize: vertical; min-height: 60px; }
+.form-row   { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+input[readonly] { background: #f5f4f0; color: #666; }
+
+/* Phase table inside modal */
+.phase-tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+.phase-tbl th { background: #f9f9f7; padding: 6px 8px; font-weight: 500; color: #888; border-bottom: 0.5px solid rgba(0,0,0,0.1); text-align: left; white-space: nowrap; }
+.phase-tbl td { padding: 3px 4px; border-bottom: 0.5px solid rgba(0,0,0,0.07); vertical-align: middle; }
+.phase-tbl input, .phase-tbl select { padding: 4px 6px; font-size: 12px; border-radius: 6px; }
+
+/* Icon buttons */
+.icon-btn { background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; font-size: 12px; color: #aaa; font-family: inherit; }
+.icon-btn:hover      { color: #A32D2D; background: #FCEBEB; }
+.icon-btn.edit:hover { color: #185FA5; background: #E6F1FB; }
+
+/* Info box */
+.info-box { background: #f5f4f0; border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
+
+/* Divider */
+.divider { border: none; border-top: 0.5px solid rgba(0,0,0,0.1); margin: 16px 0; }
+
+.sub-text { font-size: 11px; color: #888; }
 </style>
 </head>
 <body>
@@ -70,10 +109,10 @@ textarea { resize: vertical; min-height: 70px; }
       <div class="logo-sub">Design Fee Manager</div>
     </div>
     <div class="nav-item active" onclick="switchPage('dashboard')" id="nav-dashboard">◻ ダッシュボード</div>
-    <div class="nav-item" onclick="switchPage('projects')" id="nav-projects">◻ 案件管理</div>
-    <div class="nav-item" onclick="switchPage('invoices')" id="nav-invoices">◻ 請求書</div>
-    <div class="nav-item" onclick="switchPage('payments')" id="nav-payments">◻ 入金管理</div>
-    <div class="nav-item" onclick="switchPage('calc')" id="nav-calc">◻ 報酬計算</div>
+    <div class="nav-item" onclick="switchPage('projects')"  id="nav-projects">◻ 案件管理</div>
+    <div class="nav-item" onclick="switchPage('invoices')"  id="nav-invoices">◻ 請求書一覧</div>
+    <div class="nav-item" onclick="switchPage('payments')"  id="nav-payments">◻ 入金管理</div>
+    <div class="nav-item" onclick="switchPage('calc')"      id="nav-calc">◻ 報酬計算</div>
   </div>
   <div class="main">
     <div class="topbar">
@@ -96,240 +135,663 @@ textarea { resize: vertical; min-height: 70px; }
 </div>
 
 <script>
-const FEE_TYPES = ['基本設計料','実施設計料','監理料','その他業務報酬','インテリア設計料','確認申請費','各種調査費'];
-const STATUS_PROJECT = ['進行中','完了','保留','見積中'];
-const STATUS_INV = ['未発行','発行済','入金済','一部入金'];
+// ===== Constants =====
+const DEFAULT_PHASES = [
+  { name: '調査企画業務', ratio: 5  },
+  { name: '基本計画業務', ratio: 10 },
+  { name: '基本設計業務', ratio: 25 },
+  { name: '実施設計業務', ratio: 40 },
+  { name: '監理業務',     ratio: 20 },
+  { name: 'その他業務',   ratio: 0  },
+];
+const STATUS_PROJECT = ['進行中', '完了', '保留', '見積中'];
+const STATUS_PHASE   = ['未発行', '発行済', '入金済', '一部入金'];
 
+// ===== State =====
 let state = {
   page: 'dashboard',
-  projects: JSON.parse(localStorage.getItem('dfm_projects') || '[]'),
-  invoices: JSON.parse(localStorage.getItem('dfm_invoices') || '[]'),
-  payments: JSON.parse(localStorage.getItem('dfm_payments') || '[]'),
+  projects: JSON.parse(localStorage.getItem('dfm2_proj') || '[]'),
+  payments: JSON.parse(localStorage.getItem('dfm2_pay')  || '[]'),
 };
 
 function save() {
-  localStorage.setItem('dfm_projects', JSON.stringify(state.projects));
-  localStorage.setItem('dfm_invoices', JSON.stringify(state.invoices));
-  localStorage.setItem('dfm_payments', JSON.stringify(state.payments));
-}
-function fmt(n) { return Number(n||0).toLocaleString('ja-JP'); }
-function fmtDate(d) { return d ? d.replace(/-/g,'/') : '—'; }
-function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function today() { return new Date().toISOString().slice(0,10); }
-function statusBadge(s) {
-  const m={'進行中':'badge-info','完了':'badge-success','保留':'badge-warning','見積中':'badge-gray','未発行':'badge-gray','発行済':'badge-warning','入金済':'badge-success','一部入金':'badge-info','未入金':'badge-danger'};
-  return m[s]||'badge-gray';
+  localStorage.setItem('dfm2_proj', JSON.stringify(state.projects));
+  localStorage.setItem('dfm2_pay',  JSON.stringify(state.payments));
 }
 
+// ===== Utils =====
+function fmt(n)     { return Number(n || 0).toLocaleString('ja-JP'); }
+function fmtDate(d) { return d ? d.replace(/-/g, '/') : '—'; }
+function genId()    { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+function today()    { return new Date().toISOString().slice(0, 10); }
+function statusBadge(s) {
+  const m = {
+    '進行中': 'badge-info', '完了': 'badge-success', '保留': 'badge-warning', '見積中': 'badge-gray',
+    '未発行': 'badge-gray', '発行済': 'badge-warning', '入金済': 'badge-success',
+    '一部入金': 'badge-info', '未入金': 'badge-danger',
+  };
+  return m[s] || 'badge-gray';
+}
+
+// Flat list of all phases with project reference
+function allPhases() {
+  return state.projects.flatMap(p =>
+    (p.phases || []).map(ph => ({ ...ph, project: p }))
+  );
+}
+
+function phasePaid(phaseId) {
+  return state.payments
+    .filter(p => p.phaseId === phaseId)
+    .reduce((s, p) => s + Number(p.amount), 0);
+}
+
+function phaseBalance(phase) {
+  return Number(phase.feeWithTax || 0) - phasePaid(phase.id);
+}
+
+function projectTotals(proj) {
+  const phases      = proj.phases || [];
+  const totalFee    = phases.reduce((s, ph) => s + Number(ph.feeWithTax || 0), 0);
+  const totalPaid   = phases.reduce((s, ph) => s + phasePaid(ph.id), 0);
+  const activeCount = phases.filter(ph => Number(ph.feeWithTax || 0) > 0).length;
+  const paidCount   = phases.filter(ph => Number(ph.feeWithTax || 0) > 0 && phaseBalance(ph) <= 0).length;
+  return { totalFee, totalPaid, unpaid: totalFee - totalPaid, paidCount, activeCount };
+}
+
+// ===== Navigation =====
 function switchPage(p) {
   state.page = p;
-  document.querySelectorAll('.nav-item').forEach(el=>el.classList.remove('active'));
-  document.getElementById('nav-'+p)?.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+  document.getElementById('nav-' + p)?.classList.add('active');
   render();
 }
 
 function render() {
-  const titles={dashboard:'ダッシュボード',projects:'案件管理',invoices:'請求書',payments:'入金管理',calc:'報酬計算'};
-  document.getElementById('page-title').textContent = titles[state.page]||'';
-  const actionEl = document.getElementById('topbar-action');
+  const titles = { dashboard: 'ダッシュボード', projects: '案件管理', invoices: '請求書一覧', payments: '入金管理', calc: '報酬計算' };
+  document.getElementById('page-title').textContent = titles[state.page] || '';
+  const actionEl  = document.getElementById('topbar-action');
   const contentEl = document.getElementById('main-content');
-  if (state.page==='dashboard') { actionEl.innerHTML=''; renderDashboard(contentEl); }
-  else if (state.page==='projects') { actionEl.innerHTML='<button class="btn btn-primary" onclick="openProjectModal()">+ 新規案件</button>'; renderProjects(contentEl); }
-  else if (state.page==='invoices') { actionEl.innerHTML='<button class="btn btn-primary" onclick="openInvoiceModal()">+ 新規請求書</button>'; renderInvoices(contentEl); }
-  else if (state.page==='payments') { actionEl.innerHTML=''; renderPayments(contentEl); }
-  else if (state.page==='calc') { actionEl.innerHTML=''; renderCalc(contentEl); }
+  if      (state.page === 'dashboard') { actionEl.innerHTML = ''; renderDashboard(contentEl); }
+  else if (state.page === 'projects')  { actionEl.innerHTML = '<button class="btn btn-primary" onclick="openProjectModal()">+ 新規案件</button>'; renderProjects(contentEl); }
+  else if (state.page === 'invoices')  { actionEl.innerHTML = ''; renderInvoices(contentEl); }
+  else if (state.page === 'payments')  { actionEl.innerHTML = ''; renderPayments(contentEl); }
+  else if (state.page === 'calc')      { actionEl.innerHTML = ''; renderCalc(contentEl); }
 }
 
+// ===== Dashboard =====
 function renderDashboard(el) {
-  const totalFee = state.projects.reduce((s,p)=>s+Number(p.totalFee||0),0);
-  const invoicedTotal = state.invoices.reduce((s,i)=>s+Number(i.amountWithTax||0),0);
-  const paidTotal = state.payments.reduce((s,p)=>s+Number(p.amount||0),0);
-  const unpaid = invoicedTotal - paidTotal;
+  const totalFee     = state.projects.reduce((s, p) => s + projectTotals(p).totalFee, 0);
+  const totalPaid    = state.projects.reduce((s, p) => s + projectTotals(p).totalPaid, 0);
+  const unpaid       = totalFee - totalPaid;
+  const activeProj   = state.projects.filter(p => p.status === '進行中').length;
+  const unpaidPhases = allPhases().filter(ph => Number(ph.feeWithTax || 0) > 0 && phaseBalance(ph) > 0);
+
+  const projRows = state.projects.slice().reverse().map(p => {
+    const t   = projectTotals(p);
+    const pct = t.activeCount > 0 ? Math.round(t.paidCount / t.activeCount * 100) : 0;
+    return `<tr>
+      <td><a style="color:#185FA5;cursor:pointer" onclick="openProjectDetail('${p.id}')">${p.name}</a></td>
+      <td>${p.client || '—'}</td>
+      <td style="text-align:right">¥${fmt(t.totalFee)}</td>
+      <td style="min-width:130px">
+        <div class="sub-text">${t.paidCount} / ${t.activeCount} フェーズ完了</div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </td>
+      <td><span class="badge ${statusBadge(p.status)}">${p.status}</span></td>
+    </tr>`;
+  }).join('');
+
+  const unpaidRows = unpaidPhases.map(ph => {
+    const bal = phaseBalance(ph);
+    return `<tr>
+      <td>${ph.project.name}</td>
+      <td>${ph.name}</td>
+      <td>${ph.invoiceNumber || '—'}</td>
+      <td>${fmtDate(ph.dueDate)}</td>
+      <td style="text-align:right;color:#A32D2D">¥${fmt(bal)}</td>
+      <td><span class="badge ${statusBadge(ph.status)}">${ph.status}</span></td>
+    </tr>`;
+  }).join('');
+
   el.innerHTML = `
-    <div class="metrics">
-      <div class="metric-card"><div class="metric-label">受注総額</div><div class="metric-value">¥${fmt(totalFee)}</div><div class="metric-sub">${state.projects.length} 件</div></div>
-      <div class="metric-card"><div class="metric-label">請求済合計</div><div class="metric-value">¥${fmt(invoicedTotal)}</div><div class="metric-sub">${state.invoices.length} 通</div></div>
-      <div class="metric-card"><div class="metric-label">入金済合計</div><div class="metric-value">¥${fmt(paidTotal)}</div><div class="metric-sub" style="color:${unpaid>0?'#A32D2D':'inherit'}">未収 ¥${fmt(unpaid)}</div></div>
-      <div class="metric-card"><div class="metric-label">進行中案件</div><div class="metric-value">${state.projects.filter(p=>p.status==='進行中').length} 件</div><div class="metric-sub">請求待ち ${state.invoices.filter(i=>i.status==='発行済').length} 通</div></div>
+    <div class="metrics metrics-4">
+      <div class="metric-card"><div class="metric-label">受注総額（税込）</div><div class="metric-value">¥${fmt(totalFee)}</div><div class="metric-sub">${state.projects.length} 件</div></div>
+      <div class="metric-card"><div class="metric-label">入金済合計</div><div class="metric-value">¥${fmt(totalPaid)}</div></div>
+      <div class="metric-card"><div class="metric-label">未収残高</div><div class="metric-value" style="color:${unpaid > 0 ? '#A32D2D' : 'inherit'}">¥${fmt(unpaid)}</div></div>
+      <div class="metric-card"><div class="metric-label">進行中案件</div><div class="metric-value">${activeProj} 件</div><div class="metric-sub">未収フェーズ ${unpaidPhases.length} 件</div></div>
     </div>
     <div class="section">
-      <div class="section-header"><span class="section-title">最近の案件</span><button class="btn" onclick="switchPage('projects')">すべて表示</button></div>
-      ${state.projects.length===0?'<div class="empty-state">案件がありません</div>':`<table><thead><tr><th>案件名</th><th>クライアント</th><th>種別</th><th style="text-align:right">設計料合計</th><th>状況</th></tr></thead><tbody>${state.projects.slice(-5).reverse().map(p=>`<tr><td>${p.name}</td><td>${p.client||'—'}</td><td>${p.feeType||'—'}</td><td style="text-align:right">¥${fmt(p.totalFee)}</td><td><span class="badge ${statusBadge(p.status)}">${p.status}</span></td></tr>`).join('')}</tbody></table>`}
+      <div class="section-header"><span class="section-title">案件別進捗</span><button class="btn btn-sm" onclick="switchPage('projects')">すべて表示</button></div>
+      ${state.projects.length === 0
+        ? '<div class="empty-state">案件がありません</div>'
+        : `<table><thead><tr><th>案件名</th><th>クライアント</th><th style="text-align:right">設計料合計（税込）</th><th>フェーズ進捗</th><th>状況</th></tr></thead><tbody>${projRows}</tbody></table>`}
     </div>
     <div class="section">
-      <div class="section-header"><span class="section-title">未収入金一覧</span></div>
-      ${state.invoices.filter(i=>i.status!=='入金済').length===0?'<div class="empty-state">未収の請求書はありません</div>':`<table><thead><tr><th>請求書番号</th><th>案件名</th><th>発行日</th><th style="text-align:right">金額</th><th>状況</th></tr></thead><tbody>${state.invoices.filter(i=>i.status!=='入金済').map(i=>`<tr><td>${i.number}</td><td>${i.projectName||'—'}</td><td>${fmtDate(i.issueDate)}</td><td style="text-align:right">¥${fmt(i.amountWithTax)}</td><td><span class="badge ${statusBadge(i.status)}">${i.status}</span></td></tr>`).join('')}</tbody></table>`}
+      <div class="section-header"><span class="section-title">未収フェーズ一覧</span></div>
+      ${unpaidPhases.length === 0
+        ? '<div class="empty-state">未収のフェーズはありません</div>'
+        : `<table><thead><tr><th>案件名</th><th>フェーズ</th><th>請求書番号</th><th>支払期日</th><th style="text-align:right">残高</th><th>状況</th></tr></thead><tbody>${unpaidRows}</tbody></table>`}
     </div>`;
 }
 
+// ===== Projects =====
 function renderProjects(el) {
-  el.innerHTML = `<div class="section"><div class="section-header"><span class="section-title">案件一覧（${state.projects.length} 件）</span></div>${state.projects.length===0?'<div class="empty-state">案件がありません。「+ 新規案件」から追加してください。</div>':`<table><thead><tr><th style="width:22%">案件名</th><th style="width:16%">クライアント</th><th style="width:14%">設計料種別</th><th style="width:12%;text-align:right">設計料合計</th><th style="width:10%">契約日</th><th style="width:10%">完了予定</th><th style="width:9%">状況</th><th style="width:7%">操作</th></tr></thead><tbody>${state.projects.map(p=>`<tr><td title="${p.name}">${p.name}</td><td>${p.client||'—'}</td><td>${p.feeType||'—'}</td><td style="text-align:right">¥${fmt(p.totalFee)}</td><td>${fmtDate(p.contractDate)}</td><td>${fmtDate(p.completionDate)}</td><td><span class="badge ${statusBadge(p.status)}">${p.status}</span></td><td><button class="edit-btn" onclick="openProjectModal('${p.id}')">編集</button><button class="delete-btn" onclick="deleteProject('${p.id}')">削除</button></td></tr>`).join('')}</tbody></table>`}</div>`;
+  const rows = state.projects.map(p => {
+    const t   = projectTotals(p);
+    const pct = t.activeCount > 0 ? Math.round(t.paidCount / t.activeCount * 100) : 0;
+    return `<tr>
+      <td><a style="color:#185FA5;cursor:pointer" onclick="openProjectDetail('${p.id}')">${p.name}</a></td>
+      <td>${p.client || '—'}</td>
+      <td style="text-align:right">¥${fmt(t.totalFee)}</td>
+      <td style="min-width:110px">
+        <div class="sub-text">${t.paidCount} / ${t.activeCount}</div>
+        <div class="progress-wrap"><div class="progress-bar" style="width:${pct}%"></div></div>
+      </td>
+      <td><span class="badge ${statusBadge(p.status)}">${p.status}</span></td>
+      <td>
+        <button class="icon-btn edit" onclick="openProjectModal('${p.id}')">編集</button>
+        <button class="icon-btn"      onclick="deleteProject('${p.id}')">削除</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  el.innerHTML = `<div class="section">
+    <div class="section-header"><span class="section-title">案件一覧（${state.projects.length} 件）</span></div>
+    ${state.projects.length === 0
+      ? '<div class="empty-state">案件がありません。「+ 新規案件」から追加してください。</div>'
+      : `<table><thead><tr><th>案件名</th><th>クライアント</th><th style="text-align:right">設計料合計（税込）</th><th>フェーズ進捗</th><th>状況</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`}
+  </div>`;
 }
 
-function openProjectModal(id) {
-  const p = id ? state.projects.find(x=>x.id===id) : null;
-  document.getElementById('modal-title').textContent = p?'案件を編集':'新規案件を追加';
+// --- Project Detail (read-only modal) ---
+function openProjectDetail(id) {
+  const p = state.projects.find(x => x.id === id);
+  if (!p) return;
+  const t = projectTotals(p);
+
+  const phaseRows = (p.phases || []).map(ph => {
+    const paid    = phasePaid(ph.id);
+    const balance = Number(ph.feeWithTax || 0) - paid;
+    return `<tr>
+      <td>${ph.name}</td>
+      <td style="text-align:right">${ph.ratio}%</td>
+      <td style="text-align:right">¥${fmt(ph.fee)}</td>
+      <td style="text-align:right">¥${fmt(ph.feeWithTax)}</td>
+      <td>${ph.invoiceNumber || '—'}</td>
+      <td>${fmtDate(ph.issueDate)}</td>
+      <td>${fmtDate(ph.dueDate)}</td>
+      <td><span class="badge ${statusBadge(ph.status)}">${ph.status}</span></td>
+      <td style="text-align:right;color:${balance > 0 ? '#A32D2D' : '#27500A'}">¥${fmt(balance)}</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('modal-title').textContent = p.name;
   document.getElementById('modal-body').innerHTML = `
-    <div class="form-group"><label class="form-label">案件名 *</label><input id="f-name" value="${p?.name||''}" placeholder="例：〇〇邸新築工事"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">クライアント名</label><input id="f-client" value="${p?.client||''}"></div><div class="form-group"><label class="form-label">状況</label><select id="f-status">${STATUS_PROJECT.map(s=>`<option${p?.status===s?' selected':''}>${s}</option>`).join('')}</select></div></div>
-    <div class="form-group"><label class="form-label">設計料種別</label><select id="f-feeType">${FEE_TYPES.map(t=>`<option${p?.feeType===t?' selected':''}>${t}</option>`).join('')}</select></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">設計料合計（円・税抜）</label><input id="f-totalFee" type="number" value="${p?.totalFee||''}" placeholder="0"></div><div class="form-group"><label class="form-label">消費税率</label><select id="f-taxRate"><option value="10"${(!p||p.taxRate==='10')?' selected':''}>10%</option><option value="8"${p?.taxRate==='8'?' selected':''}>8%</option><option value="0"${p?.taxRate==='0'?' selected':''}>非課税</option></select></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">契約日</label><input id="f-contractDate" type="date" value="${p?.contractDate||''}"></div><div class="form-group"><label class="form-label">完了予定日</label><input id="f-completionDate" type="date" value="${p?.completionDate||''}"></div></div>
-    <div class="form-group"><label class="form-label">所在地</label><input id="f-location" value="${p?.location||''}" placeholder="例：兵庫県明石市"></div>
-    <div class="form-group"><label class="form-label">メモ</label><textarea id="f-memo">${p?.memo||''}</textarea></div>`;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveProject('${id||''}')">保存</button>`;
+    <div class="info-box" style="display:flex;gap:24px;flex-wrap:wrap">
+      <div><div class="sub-text">クライアント</div>${p.client || '—'}</div>
+      <div><div class="sub-text">状況</div><span class="badge ${statusBadge(p.status)}">${p.status}</span></div>
+      <div><div class="sub-text">工事費用（税抜）</div>¥${fmt(p.constructionCost)}</div>
+      <div><div class="sub-text">設計料率</div>${p.feeRate}%</div>
+      <div><div class="sub-text">設計料合計（税込）</div><strong>¥${fmt(t.totalFee)}</strong></div>
+      <div><div class="sub-text">未収残高</div><strong style="color:${t.unpaid > 0 ? '#A32D2D' : '#27500A'}">¥${fmt(t.unpaid)}</strong></div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="phase-tbl">
+        <thead><tr>
+          <th>フェーズ名</th><th style="text-align:right">按分%</th>
+          <th style="text-align:right">税抜</th><th style="text-align:right">税込</th>
+          <th>請求書番号</th><th>発行日</th><th>支払期日</th><th>状況</th>
+          <th style="text-align:right">残高</th>
+        </tr></thead>
+        <tbody>${phaseRows}</tbody>
+      </table>
+    </div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn" onclick="closeModal()">閉じる</button>
+    <button class="btn btn-primary" onclick="closeModal();openProjectModal('${id}')">編集</button>`;
   document.getElementById('modal').classList.add('show');
 }
 
+// --- Project Add / Edit Modal ---
+function openProjectModal(id) {
+  const p      = id ? state.projects.find(x => x.id === id) : null;
+  const phases = p
+    ? (p.phases || [])
+    : DEFAULT_PHASES.map(ph => ({
+        id: genId(), name: ph.name, ratio: ph.ratio,
+        fee: 0, feeWithTax: 0,
+        invoiceNumber: '', issueDate: '', dueDate: '',
+        status: '未発行',
+      }));
+
+  document.getElementById('modal-title').textContent = p ? '案件を編集' : '新規案件を追加';
+  document.getElementById('modal-body').innerHTML = `
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">案件名 *</label><input id="fp-name" value="${p?.name || ''}" placeholder="例：〇〇邸新築工事"></div>
+      <div class="form-group"><label class="form-label">クライアント名</label><input id="fp-client" value="${p?.client || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">所在地</label><input id="fp-location" value="${p?.location || ''}" placeholder="例：兵庫県明石市"></div>
+      <div class="form-group"><label class="form-label">状況</label><select id="fp-status">${STATUS_PROJECT.map(s => `<option${p?.status === s ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">契約日</label><input id="fp-contractDate" type="date" value="${p?.contractDate || ''}"></div>
+      <div class="form-group"><label class="form-label">完了予定日</label><input id="fp-completionDate" type="date" value="${p?.completionDate || ''}"></div>
+    </div>
+    <hr class="divider">
+    <div class="form-row-3">
+      <div class="form-group"><label class="form-label">工事費用（税抜・円）</label><input id="fp-cost"    type="number" value="${p?.constructionCost || ''}" placeholder="30000000" oninput="recalcPhases()"></div>
+      <div class="form-group"><label class="form-label">設計料率（%）</label><input id="fp-feeRate" type="number" value="${p?.feeRate ?? 10}" step="0.1" oninput="recalcPhases()"></div>
+      <div class="form-group"><label class="form-label">消費税率</label>
+        <select id="fp-taxRate" onchange="recalcPhases()">
+          <option value="10"${(!p || p.taxRate === '10') ? ' selected' : ''}>10%</option>
+          <option value="8"${p?.taxRate === '8' ? ' selected' : ''}>8%</option>
+          <option value="0"${p?.taxRate === '0' ? ' selected' : ''}>非課税</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:500;color:#444">フェーズ設定</div>
+      <button class="btn btn-sm" type="button" onclick="addPhaseRow()">+ フェーズを追加</button>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="phase-tbl">
+        <thead><tr>
+          <th style="min-width:120px">フェーズ名</th>
+          <th style="text-align:right;width:56px">按分%</th>
+          <th style="text-align:right;width:110px">税抜（円）</th>
+          <th style="text-align:right;width:110px">税込（円）</th>
+          <th style="width:120px">請求書番号</th>
+          <th style="width:108px">発行日</th>
+          <th style="width:108px">支払期日</th>
+          <th style="width:84px">状況</th>
+          <th style="width:28px"></th>
+        </tr></thead>
+        <tbody id="phase-tbody">
+          ${phases.map(ph => phaseRowHtml(ph)).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div id="phase-total" style="text-align:right;font-size:12px;color:#888;margin-top:6px"></div>
+    <div class="form-group" style="margin-top:14px"><label class="form-label">メモ</label><textarea id="fp-memo">${p?.memo || ''}</textarea></div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn" onclick="closeModal()">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveProject('${id || ''}')">保存</button>`;
+  document.getElementById('modal').classList.add('show');
+  updatePhaseTotal();
+}
+
+function phaseRowHtml(ph) {
+  const statusOpts = STATUS_PHASE.map(s => `<option${ph.status === s ? ' selected' : ''}>${s}</option>`).join('');
+  return `<tr id="phrow-${ph.id}">
+    <td><input value="${ph.name}"></td>
+    <td><input type="number" id="ph-ratio-${ph.id}" style="text-align:right" value="${ph.ratio}" min="0" max="100" oninput="recalcPhases()"></td>
+    <td><input type="number" id="ph-fee-${ph.id}"   style="text-align:right" value="${ph.fee || 0}" oninput="onManualFee('${ph.id}')"></td>
+    <td><input type="number" id="ph-fwt-${ph.id}"   style="text-align:right" value="${ph.feeWithTax || 0}" readonly></td>
+    <td><input id="ph-inv-${ph.id}"   value="${ph.invoiceNumber || ''}"></td>
+    <td><input id="ph-idate-${ph.id}" type="date" value="${ph.issueDate || ''}"></td>
+    <td><input id="ph-ddate-${ph.id}" type="date" value="${ph.dueDate || ''}"></td>
+    <td><select id="ph-st-${ph.id}">${statusOpts}</select></td>
+    <td><button class="icon-btn" type="button" onclick="removePhaseRow('${ph.id}')">✕</button></td>
+  </tr>`;
+}
+
+function onManualFee(id) {
+  const fee     = Number(document.getElementById('ph-fee-' + id)?.value || 0);
+  const taxRate = Number(document.getElementById('fp-taxRate')?.value || 10);
+  const fwtEl   = document.getElementById('ph-fwt-' + id);
+  if (fwtEl) fwtEl.value = fee + Math.round(fee * taxRate / 100);
+  updatePhaseTotal();
+}
+
+function recalcPhases() {
+  const cost    = Number(document.getElementById('fp-cost')?.value    || 0);
+  const feeRate = Number(document.getElementById('fp-feeRate')?.value || 10);
+  const taxRate = Number(document.getElementById('fp-taxRate')?.value || 10);
+  const tbody   = document.getElementById('phase-tbody');
+  if (!tbody) return;
+  Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+    const id    = row.id.replace('phrow-', '');
+    const ratio = Number(document.getElementById('ph-ratio-' + id)?.value || 0);
+    const fee   = Math.round(cost * feeRate / 100 * ratio / 100);
+    const feeEl = document.getElementById('ph-fee-' + id);
+    const fwtEl = document.getElementById('ph-fwt-' + id);
+    if (feeEl) feeEl.value = fee;
+    if (fwtEl) fwtEl.value = fee + Math.round(fee * taxRate / 100);
+  });
+  updatePhaseTotal();
+}
+
+function updatePhaseTotal() {
+  const el    = document.getElementById('phase-total');
+  const tbody = document.getElementById('phase-tbody');
+  if (!el || !tbody) return;
+  let totalRatio = 0, totalFwt = 0;
+  Array.from(tbody.querySelectorAll('tr')).forEach(row => {
+    const id = row.id.replace('phrow-', '');
+    totalRatio += Number(document.getElementById('ph-ratio-' + id)?.value || 0);
+    totalFwt   += Number(document.getElementById('ph-fwt-'   + id)?.value || 0);
+  });
+  const col = Math.abs(totalRatio - 100) < 0.01 ? '#27500A' : '#A32D2D';
+  el.innerHTML = `按分合計: <strong style="color:${col}">${totalRatio}%</strong>　設計料合計（税込）: <strong>¥${fmt(totalFwt)}</strong>`;
+}
+
+function addPhaseRow() {
+  const tbody = document.getElementById('phase-tbody');
+  if (!tbody) return;
+  const ph  = { id: genId(), name: 'カスタム業務', ratio: 0, fee: 0, feeWithTax: 0, invoiceNumber: '', issueDate: '', dueDate: '', status: '未発行' };
+  const tmp = document.createElement('tbody');
+  tmp.innerHTML = phaseRowHtml(ph);
+  tbody.appendChild(tmp.firstElementChild);
+  updatePhaseTotal();
+}
+
+function removePhaseRow(id) {
+  document.getElementById('phrow-' + id)?.remove();
+  updatePhaseTotal();
+}
+
+function getEditPhases() {
+  const tbody = document.getElementById('phase-tbody');
+  if (!tbody) return [];
+  return Array.from(tbody.querySelectorAll('tr')).map(row => {
+    const id   = row.id.replace('phrow-', '');
+    const name = row.querySelector('input')?.value || '';
+    return {
+      id,
+      name,
+      ratio:         Number(document.getElementById('ph-ratio-' + id)?.value || 0),
+      fee:           Number(document.getElementById('ph-fee-'   + id)?.value || 0),
+      feeWithTax:    Number(document.getElementById('ph-fwt-'   + id)?.value || 0),
+      invoiceNumber: document.getElementById('ph-inv-'   + id)?.value || '',
+      issueDate:     document.getElementById('ph-idate-' + id)?.value || '',
+      dueDate:       document.getElementById('ph-ddate-' + id)?.value || '',
+      status:        document.getElementById('ph-st-'    + id)?.value || '未発行',
+    };
+  });
+}
+
 function saveProject(id) {
-  const name = document.getElementById('f-name').value.trim();
+  const name = document.getElementById('fp-name').value.trim();
   if (!name) { alert('案件名を入力してください'); return; }
-  const data = {id:id||genId(),name,client:document.getElementById('f-client').value,status:document.getElementById('f-status').value,feeType:document.getElementById('f-feeType').value,totalFee:document.getElementById('f-totalFee').value,taxRate:document.getElementById('f-taxRate').value,contractDate:document.getElementById('f-contractDate').value,completionDate:document.getElementById('f-completionDate').value,location:document.getElementById('f-location').value,memo:document.getElementById('f-memo').value};
-  if (id) { const idx=state.projects.findIndex(p=>p.id===id); state.projects[idx]=data; } else { state.projects.push(data); }
+  const data = {
+    id: id || genId(),
+    name,
+    client:           document.getElementById('fp-client').value,
+    location:         document.getElementById('fp-location').value,
+    status:           document.getElementById('fp-status').value,
+    contractDate:     document.getElementById('fp-contractDate').value,
+    completionDate:   document.getElementById('fp-completionDate').value,
+    constructionCost: Number(document.getElementById('fp-cost').value    || 0),
+    feeRate:          Number(document.getElementById('fp-feeRate').value || 0),
+    taxRate:          document.getElementById('fp-taxRate').value,
+    memo:             document.getElementById('fp-memo').value,
+    phases:           getEditPhases(),
+  };
+  if (id) {
+    const idx = state.projects.findIndex(p => p.id === id);
+    state.projects[idx] = data;
+  } else {
+    state.projects.push(data);
+  }
   save(); closeModal(); render();
 }
 
 function deleteProject(id) {
-  if (!confirm('この案件を削除しますか？')) return;
-  state.projects = state.projects.filter(p=>p.id!==id);
+  if (!confirm('この案件を削除しますか？\n関連する入金記録も削除されます。')) return;
+  const proj = state.projects.find(p => p.id === id);
+  if (proj) {
+    const ids = new Set((proj.phases || []).map(ph => ph.id));
+    state.payments = state.payments.filter(p => !ids.has(p.phaseId));
+  }
+  state.projects = state.projects.filter(p => p.id !== id);
   save(); render();
 }
 
+// ===== Invoices =====
 function renderInvoices(el) {
-  el.innerHTML = `<div class="section"><div class="section-header"><span class="section-title">請求書一覧（${state.invoices.length} 通）</span></div>${state.invoices.length===0?'<div class="empty-state">請求書がありません。「+ 新規請求書」から作成してください。</div>':`<table><thead><tr><th style="width:14%">請求書番号</th><th style="width:22%">案件名</th><th style="width:14%">発行日</th><th style="width:14%">支払期日</th><th style="width:14%;text-align:right">請求金額（税込）</th><th style="width:10%">状況</th><th style="width:12%">操作</th></tr></thead><tbody>${state.invoices.map(i=>`<tr><td>${i.number}</td><td>${i.projectName||'—'}</td><td>${fmtDate(i.issueDate)}</td><td>${fmtDate(i.dueDate)}</td><td style="text-align:right">¥${fmt(i.amountWithTax)}</td><td><span class="badge ${statusBadge(i.status)}">${i.status}</span></td><td><button class="edit-btn" onclick="openInvoiceModal('${i.id}')">詳細</button><button class="delete-btn" onclick="deleteInvoice('${i.id}')">削除</button></td></tr>`).join('')}</tbody></table>`}</div>`;
+  const phases = allPhases().filter(ph => Number(ph.feeWithTax || 0) > 0 || ph.invoiceNumber);
+  const rows = phases.map(ph => `<tr>
+    <td>${ph.invoiceNumber || '—'}</td>
+    <td>${ph.project.name}</td>
+    <td>${ph.name}</td>
+    <td>${fmtDate(ph.issueDate)}</td>
+    <td>${fmtDate(ph.dueDate)}</td>
+    <td style="text-align:right">¥${fmt(ph.feeWithTax)}</td>
+    <td><span class="badge ${statusBadge(ph.status)}">${ph.status}</span></td>
+    <td><button class="icon-btn edit" onclick="openPhaseEditModal('${ph.project.id}','${ph.id}')">編集</button></td>
+  </tr>`).join('');
+
+  el.innerHTML = `<div class="section">
+    <div class="section-header"><span class="section-title">請求書一覧（全フェーズ）</span></div>
+    ${phases.length === 0
+      ? '<div class="empty-state">フェーズが登録されていません</div>'
+      : `<table><thead><tr><th>請求書番号</th><th>案件名</th><th>フェーズ</th><th>発行日</th><th>支払期日</th><th style="text-align:right">金額（税込）</th><th>状況</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`}
+  </div>`;
 }
 
-function autoInvNumber() { return `INV-${new Date().getFullYear()}-${String(state.invoices.length+1).padStart(3,'0')}`; }
-
-function openInvoiceModal(id) {
-  const inv = id ? state.invoices.find(x=>x.id===id) : null;
-  const projOpts = state.projects.map(p=>`<option value="${p.id}"${inv?.projectId===p.id?' selected':''}>${p.name}</option>`).join('');
-  document.getElementById('modal-title').textContent = inv?'請求書を編集':'新規請求書を作成';
+function openPhaseEditModal(projId, phaseId) {
+  const proj = state.projects.find(p => p.id === projId);
+  const ph   = proj?.phases?.find(x => x.id === phaseId);
+  if (!proj || !ph) return;
+  const txRate = ph.taxRate ?? proj.taxRate ?? '10';
+  document.getElementById('modal-title').textContent = `${proj.name} — ${ph.name}`;
   document.getElementById('modal-body').innerHTML = `
-    <div class="form-row"><div class="form-group"><label class="form-label">請求書番号 *</label><input id="fi-number" value="${inv?.number||autoInvNumber()}"></div><div class="form-group"><label class="form-label">状況</label><select id="fi-status">${STATUS_INV.map(s=>`<option${inv?.status===s?' selected':''}>${s}</option>`).join('')}</select></div></div>
-    <div class="form-group"><label class="form-label">対象案件</label><select id="fi-project" onchange="fillInvFromProject()"><option value="">— 案件を選択 —</option>${projOpts}</select></div>
-    <div class="form-group"><label class="form-label">請求先</label><input id="fi-client" value="${inv?.client||''}"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">発行日</label><input id="fi-issueDate" type="date" value="${inv?.issueDate||today()}"></div><div class="form-group"><label class="form-label">支払期日</label><input id="fi-dueDate" type="date" value="${inv?.dueDate||''}"></div></div>
-    <div class="form-group"><label class="form-label">件名</label><input id="fi-subject" value="${inv?.subject||''}" placeholder="例：〇〇邸設計料 基本設計分"></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">税抜金額（円）</label><input id="fi-amount" type="number" value="${inv?.amount||''}" oninput="calcInvTax()"></div><div class="form-group"><label class="form-label">消費税率</label><select id="fi-taxRate" onchange="calcInvTax()"><option value="10"${(!inv||inv.taxRate==='10')?' selected':''}>10%</option><option value="8"${inv?.taxRate==='8'?' selected':''}>8%</option><option value="0"${inv?.taxRate==='0'?' selected':''}>非課税</option></select></div></div>
-    <div class="form-group"><label class="form-label">消費税額</label><input id="fi-tax" readonly style="background:#f5f4f0" value="${inv?.tax?'¥'+fmt(inv.tax):''}"></div>
-    <div class="form-group"><label class="form-label">税込合計</label><input id="fi-amountWithTax" readonly style="background:#f5f4f0;font-weight:500" value="${inv?.amountWithTax?'¥'+fmt(inv.amountWithTax):''}"></div>
-    <div class="form-group"><label class="form-label">備考</label><textarea id="fi-memo">${inv?.memo||''}</textarea></div>`;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="saveInvoice('${id||''}')">保存</button>`;
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">請求書番号</label><input id="pe-number" value="${ph.invoiceNumber || ''}"></div>
+      <div class="form-group"><label class="form-label">状況</label><select id="pe-status">${STATUS_PHASE.map(s => `<option${ph.status === s ? ' selected' : ''}>${s}</option>`).join('')}</select></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">発行日</label><input id="pe-issueDate" type="date" value="${ph.issueDate || ''}"></div>
+      <div class="form-group"><label class="form-label">支払期日</label><input id="pe-dueDate" type="date" value="${ph.dueDate || ''}"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">税抜金額（円）</label><input id="pe-fee" type="number" value="${ph.fee || 0}" oninput="peCalcTax()"></div>
+      <div class="form-group"><label class="form-label">消費税率</label>
+        <select id="pe-taxRate" onchange="peCalcTax()">
+          <option value="10"${txRate === '10' ? ' selected' : ''}>10%</option>
+          <option value="8"${txRate  === '8'  ? ' selected' : ''}>8%</option>
+          <option value="0"${txRate  === '0'  ? ' selected' : ''}>非課税</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group"><label class="form-label">税込金額（円）</label><input id="pe-fwt" readonly value="${ph.feeWithTax || 0}"></div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn" onclick="closeModal()">キャンセル</button>
+    <button class="btn btn-primary" onclick="savePhaseEdit('${projId}','${phaseId}')">保存</button>`;
   document.getElementById('modal').classList.add('show');
 }
 
-function fillInvFromProject() {
-  const proj = state.projects.find(p=>p.id===document.getElementById('fi-project').value);
-  if (!proj) return;
-  document.getElementById('fi-client').value = proj.client||'';
-  document.getElementById('fi-amount').value = proj.totalFee||'';
-  document.getElementById('fi-taxRate').value = proj.taxRate||'10';
-  document.getElementById('fi-subject').value = proj.name+' '+(proj.feeType||'設計料');
-  calcInvTax();
+function peCalcTax() {
+  const fee  = Number(document.getElementById('pe-fee')?.value     || 0);
+  const rate = Number(document.getElementById('pe-taxRate')?.value || 10);
+  document.getElementById('pe-fwt').value = fee + Math.round(fee * rate / 100);
 }
 
-function calcInvTax() {
-  const amt = Number(document.getElementById('fi-amount').value||0);
-  const rate = Number(document.getElementById('fi-taxRate').value||10);
-  const tax = Math.round(amt*rate/100);
-  document.getElementById('fi-tax').value = '¥'+fmt(tax);
-  document.getElementById('fi-amountWithTax').value = '¥'+fmt(amt+tax);
-}
-
-function saveInvoice(id) {
-  const number = document.getElementById('fi-number').value.trim();
-  if (!number) { alert('請求書番号を入力してください'); return; }
-  const amt = Number(document.getElementById('fi-amount').value||0);
-  const rate = Number(document.getElementById('fi-taxRate').value||10);
-  const tax = Math.round(amt*rate/100);
-  const projId = document.getElementById('fi-project').value;
-  const proj = state.projects.find(p=>p.id===projId);
-  const data = {id:id||genId(),number,projectId:projId,projectName:proj?.name||'',client:document.getElementById('fi-client').value,issueDate:document.getElementById('fi-issueDate').value,dueDate:document.getElementById('fi-dueDate').value,subject:document.getElementById('fi-subject').value,amount:amt,taxRate:rate,tax,amountWithTax:amt+tax,status:document.getElementById('fi-status').value,memo:document.getElementById('fi-memo').value};
-  if (id) { const idx=state.invoices.findIndex(i=>i.id===id); state.invoices[idx]=data; } else { state.invoices.push(data); }
+function savePhaseEdit(projId, phaseId) {
+  const proj = state.projects.find(p => p.id === projId);
+  const ph   = proj?.phases?.find(x => x.id === phaseId);
+  if (!ph) return;
+  const fee  = Number(document.getElementById('pe-fee').value || 0);
+  const rate = Number(document.getElementById('pe-taxRate').value || 10);
+  ph.invoiceNumber = document.getElementById('pe-number').value;
+  ph.status        = document.getElementById('pe-status').value;
+  ph.issueDate     = document.getElementById('pe-issueDate').value;
+  ph.dueDate       = document.getElementById('pe-dueDate').value;
+  ph.fee           = fee;
+  ph.taxRate       = String(rate);
+  ph.feeWithTax    = fee + Math.round(fee * rate / 100);
   save(); closeModal(); render();
 }
 
-function deleteInvoice(id) {
-  if (!confirm('この請求書を削除しますか？')) return;
-  state.invoices = state.invoices.filter(i=>i.id!==id);
-  save(); render();
-}
-
+// ===== Payments =====
 function renderPayments(el) {
-  const totalBilled = state.invoices.reduce((s,i)=>s+Number(i.amountWithTax||0),0);
-  const totalPaid = state.payments.reduce((s,p)=>s+Number(p.amount||0),0);
-  const unpaid = totalBilled - totalPaid;
+  const totalBilled = allPhases().reduce((s, ph) => s + Number(ph.feeWithTax || 0), 0);
+  const totalPaid   = state.payments.reduce((s, p) => s + Number(p.amount), 0);
+  const unpaid      = totalBilled - totalPaid;
+
+  const phaseRows = allPhases().map(ph => {
+    const paid    = phasePaid(ph.id);
+    const balance = Number(ph.feeWithTax || 0) - paid;
+    const st      = balance <= 0 && Number(ph.feeWithTax || 0) > 0 ? '入金済' : paid > 0 ? '一部入金' : '未入金';
+    return `<tr>
+      <td>${ph.project.name}</td>
+      <td>${ph.name}</td>
+      <td>${ph.invoiceNumber || '—'}</td>
+      <td>${fmtDate(ph.dueDate)}</td>
+      <td style="text-align:right">¥${fmt(ph.feeWithTax)}</td>
+      <td style="text-align:right">¥${fmt(paid)}</td>
+      <td style="text-align:right;color:${balance > 0 ? '#A32D2D' : '#27500A'}">¥${fmt(balance)}</td>
+      <td><span class="badge ${statusBadge(st)}">${st}</span></td>
+      <td><button class="btn btn-sm" onclick="openPaymentModal('${ph.id}')">入金登録</button></td>
+    </tr>`;
+  }).join('');
+
+  const payRows = state.payments.slice().reverse().map(pay => {
+    const ph = allPhases().find(x => x.id === pay.phaseId);
+    return `<tr>
+      <td>${fmtDate(pay.date)}</td>
+      <td>${ph?.project.name || '—'}</td>
+      <td>${ph?.name || '—'}</td>
+      <td>${ph?.invoiceNumber || '—'}</td>
+      <td style="text-align:right">¥${fmt(pay.amount)}</td>
+      <td>${pay.memo || '—'}</td>
+      <td><button class="icon-btn" onclick="deletePayment('${pay.id}')">削除</button></td>
+    </tr>`;
+  }).join('');
+
   el.innerHTML = `
-    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+    <div class="metrics metrics-3">
       <div class="metric-card"><div class="metric-label">請求済合計（税込）</div><div class="metric-value">¥${fmt(totalBilled)}</div></div>
       <div class="metric-card"><div class="metric-label">入金済合計</div><div class="metric-value">¥${fmt(totalPaid)}</div></div>
-      <div class="metric-card"><div class="metric-label">未収残高</div><div class="metric-value" style="color:${unpaid>0?'#A32D2D':'inherit'}">¥${fmt(unpaid)}</div></div>
+      <div class="metric-card"><div class="metric-label">未収残高</div><div class="metric-value" style="color:${unpaid > 0 ? '#A32D2D' : 'inherit'}">¥${fmt(unpaid)}</div></div>
     </div>
-    <div class="section"><div class="section-header"><span class="section-title">請求書ごとの入金状況</span></div>
-    ${state.invoices.length===0?'<div class="empty-state">請求書がありません</div>':`<table><thead><tr><th>請求書番号</th><th>案件名</th><th>支払期日</th><th style="text-align:right">請求額</th><th style="text-align:right">入金額</th><th style="text-align:right">残高</th><th>状況</th><th>操作</th></tr></thead><tbody>${state.invoices.map(i=>{const paid=state.payments.filter(p=>p.invoiceId===i.id).reduce((s,p)=>s+Number(p.amount),0);const balance=Number(i.amountWithTax||0)-paid;const st=balance<=0?'入金済':paid>0?'一部入金':'未入金';return`<tr><td>${i.number}</td><td>${i.projectName||'—'}</td><td>${fmtDate(i.dueDate)}</td><td style="text-align:right">¥${fmt(i.amountWithTax)}</td><td style="text-align:right">¥${fmt(paid)}</td><td style="text-align:right;color:${balance>0?'#A32D2D':'inherit'}">¥${fmt(balance)}</td><td><span class="badge ${statusBadge(st)}">${st}</span></td><td><button class="edit-btn" onclick="openPaymentModal('${i.id}')">入金登録</button></td></tr>`;}).join('')}</tbody></table>`}</div>
-    <div class="section"><div class="section-header"><span class="section-title">入金履歴</span></div>
-    ${state.payments.length===0?'<div class="empty-state">入金記録がありません</div>':`<table><thead><tr><th>入金日</th><th>請求書番号</th><th>案件名</th><th style="text-align:right">入金額</th><th>メモ</th><th>操作</th></tr></thead><tbody>${state.payments.slice().reverse().map(p=>{const inv=state.invoices.find(i=>i.id===p.invoiceId);return`<tr><td>${fmtDate(p.date)}</td><td>${inv?.number||'—'}</td><td>${inv?.projectName||'—'}</td><td style="text-align:right">¥${fmt(p.amount)}</td><td>${p.memo||'—'}</td><td><button class="delete-btn" onclick="deletePayment('${p.id}')">削除</button></td></tr>`;}).join('')}</tbody></table>`}</div>`;
+    <div class="section">
+      <div class="section-header"><span class="section-title">フェーズ別入金状況</span></div>
+      ${allPhases().length === 0
+        ? '<div class="empty-state">フェーズが登録されていません</div>'
+        : `<table><thead><tr><th>案件名</th><th>フェーズ</th><th>請求書番号</th><th>支払期日</th><th style="text-align:right">請求額</th><th style="text-align:right">入金額</th><th style="text-align:right">残高</th><th>状況</th><th>操作</th></tr></thead><tbody>${phaseRows}</tbody></table>`}
+    </div>
+    <div class="section">
+      <div class="section-header"><span class="section-title">入金履歴</span></div>
+      ${state.payments.length === 0
+        ? '<div class="empty-state">入金記録がありません</div>'
+        : `<table><thead><tr><th>入金日</th><th>案件名</th><th>フェーズ</th><th>請求書番号</th><th style="text-align:right">入金額</th><th>メモ</th><th>操作</th></tr></thead><tbody>${payRows}</tbody></table>`}
+    </div>`;
 }
 
-function openPaymentModal(invoiceId) {
-  const inv = state.invoices.find(i=>i.id===invoiceId);
-  const paid = state.payments.filter(p=>p.invoiceId===invoiceId).reduce((s,p)=>s+Number(p.amount),0);
-  const balance = Number(inv?.amountWithTax||0) - paid;
+function openPaymentModal(phaseId) {
+  const ph      = allPhases().find(x => x.id === phaseId);
+  if (!ph) return;
+  const paid    = phasePaid(phaseId);
+  const balance = Number(ph.feeWithTax || 0) - paid;
   document.getElementById('modal-title').textContent = '入金を登録';
   document.getElementById('modal-body').innerHTML = `
-    <div style="background:#f5f4f0;border-radius:8px;padding:12px;margin-bottom:16px;font-size:13px;"><div>${inv?.number} / ${inv?.projectName}</div><div style="margin-top:6px;">請求額：¥${fmt(inv?.amountWithTax)} ／ 既入金：¥${fmt(paid)} ／ <strong>残高：¥${fmt(balance)}</strong></div></div>
-    <div class="form-row"><div class="form-group"><label class="form-label">入金日 *</label><input id="fp-date" type="date" value="${today()}"></div><div class="form-group"><label class="form-label">入金額（円）*</label><input id="fp-amount" type="number" value="${balance>0?balance:''}"></div></div>
-    <div class="form-group"><label class="form-label">メモ</label><input id="fp-memo" placeholder="振込確認 等"></div>`;
-  document.getElementById('modal-footer').innerHTML = `<button class="btn" onclick="closeModal()">キャンセル</button><button class="btn btn-primary" onclick="savePayment('${invoiceId}')">入金登録</button>`;
+    <div class="info-box">
+      <div style="margin-bottom:4px">${ph.project.name} — ${ph.name}</div>
+      <div>請求額：¥${fmt(ph.feeWithTax)}　既入金：¥${fmt(paid)}　<strong>残高：¥${fmt(balance)}</strong></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">入金日 *</label><input id="pp-date" type="date" value="${today()}"></div>
+      <div class="form-group"><label class="form-label">入金額（円）*</label><input id="pp-amount" type="number" value="${balance > 0 ? balance : ''}"></div>
+    </div>
+    <div class="form-group"><label class="form-label">メモ</label><input id="pp-memo" placeholder="振込確認 等"></div>`;
+  document.getElementById('modal-footer').innerHTML = `
+    <button class="btn" onclick="closeModal()">キャンセル</button>
+    <button class="btn btn-primary" onclick="savePayment('${phaseId}')">登録</button>`;
   document.getElementById('modal').classList.add('show');
 }
 
-function savePayment(invoiceId) {
-  const date = document.getElementById('fp-date').value;
-  const amount = Number(document.getElementById('fp-amount').value||0);
-  if (!date||!amount) { alert('入金日と入金額を入力してください'); return; }
-  state.payments.push({id:genId(),invoiceId,date,amount,memo:document.getElementById('fp-memo').value});
+function savePayment(phaseId) {
+  const date   = document.getElementById('pp-date').value;
+  const amount = Number(document.getElementById('pp-amount').value || 0);
+  if (!date || !amount) { alert('入金日と入金額を入力してください'); return; }
+  state.payments.push({ id: genId(), phaseId, date, amount, memo: document.getElementById('pp-memo').value });
   save(); closeModal(); render();
 }
 
 function deletePayment(id) {
   if (!confirm('この入金記録を削除しますか？')) return;
-  state.payments = state.payments.filter(p=>p.id!==id);
+  state.payments = state.payments.filter(p => p.id !== id);
   save(); render();
 }
 
+// ===== Calculator =====
 function renderCalc(el) {
+  const phaseInputs = DEFAULT_PHASES.map((ph, i) =>
+    `<div class="form-group" style="margin-bottom:10px">
+       <label class="form-label">${ph.name}（%）</label>
+       <input id="c-p${i}" type="number" value="${ph.ratio}" min="0" oninput="calcFee()">
+     </div>`
+  ).join('');
   el.innerHTML = `
-    <div class="section" style="max-width:600px"><div class="section-header"><span class="section-title">設計料 簡易計算ツール</span></div>
-    <div style="padding:20px">
-      <div class="form-group"><label class="form-label">工事費用（税抜・万円）</label><input id="c-cost" type="number" placeholder="例：3000" oninput="calcFee()"></div>
-      <div class="form-group"><label class="form-label">設計料率（%）</label><input id="c-rate" type="number" value="10" step="0.5" oninput="calcFee()"></div>
-      <div class="form-group"><label class="form-label">消費税率</label><select id="c-tax" onchange="calcFee()"><option value="10">10%</option><option value="8">8%</option><option value="0">非課税</option></select></div>
-      <div id="c-result" style="margin-top:16px"></div>
-      <hr style="margin:20px 0;border:none;border-top:0.5px solid rgba(0,0,0,0.1)">
-      <div style="font-size:12px;color:#666;margin-bottom:12px;font-weight:500">各業務フェーズ按分</div>
-      <div class="form-row"><div class="form-group"><label class="form-label">基本設計（%）</label><input id="c-p1" type="number" value="30" oninput="calcFee()"></div><div class="form-group"><label class="form-label">実施設計（%）</label><input id="c-p2" type="number" value="50" oninput="calcFee()"></div></div>
-      <div class="form-row"><div class="form-group"><label class="form-label">監理（%）</label><input id="c-p3" type="number" value="20" oninput="calcFee()"></div><div class="form-group"></div></div>
-      <div id="c-phase" style="margin-top:8px"></div>
-    </div></div>`;
+    <div class="section" style="max-width:640px">
+      <div class="section-header"><span class="section-title">設計料 簡易計算ツール</span></div>
+      <div style="padding:20px">
+        <div class="form-row-3">
+          <div class="form-group"><label class="form-label">工事費用（税抜・万円）</label><input id="c-cost" type="number" placeholder="例：3000" oninput="calcFee()"></div>
+          <div class="form-group"><label class="form-label">設計料率（%）</label><input id="c-rate" type="number" value="10" step="0.5" oninput="calcFee()"></div>
+          <div class="form-group"><label class="form-label">消費税率</label>
+            <select id="c-tax" onchange="calcFee()">
+              <option value="10">10%</option><option value="8">8%</option><option value="0">非課税</option>
+            </select>
+          </div>
+        </div>
+        <div id="c-result"></div>
+        <hr class="divider">
+        <div style="font-size:12px;color:#666;font-weight:500;margin-bottom:10px">各業務フェーズ按分</div>
+        <div class="form-row-3">${phaseInputs}</div>
+        <div id="c-phase-result"></div>
+      </div>
+    </div>`;
 }
 
 function calcFee() {
-  const cost = Number(document.getElementById('c-cost').value||0)*10000;
-  const rate = Number(document.getElementById('c-rate').value||10);
-  const taxRate = Number(document.getElementById('c-tax').value||10);
-  const fee = cost*rate/100;
-  const tax = Math.round(fee*taxRate/100);
-  const rEl = document.getElementById('c-result');
-  if (!cost) { rEl.innerHTML=''; return; }
-  rEl.innerHTML = `<div class="metrics" style="grid-template-columns:repeat(3,1fr)"><div class="metric-card"><div class="metric-label">設計料（税抜）</div><div class="metric-value" style="font-size:17px">¥${fmt(fee)}</div></div><div class="metric-card"><div class="metric-label">消費税</div><div class="metric-value" style="font-size:17px">¥${fmt(tax)}</div></div><div class="metric-card"><div class="metric-label">設計料合計（税込）</div><div class="metric-value" style="font-size:17px">¥${fmt(fee+tax)}</div></div></div>`;
-  const p1=Number(document.getElementById('c-p1').value||0),p2=Number(document.getElementById('c-p2').value||0),p3=Number(document.getElementById('c-p3').value||0);
-  document.getElementById('c-phase').innerHTML = `<table style="font-size:13px"><thead><tr><th>フェーズ</th><th style="text-align:right">割合</th><th style="text-align:right">税抜金額</th><th style="text-align:right">税込金額</th></tr></thead><tbody>${[['基本設計',p1],['実施設計',p2],['監理',p3]].map(([n,p])=>{const f=fee*p/100;const t=Math.round(f*taxRate/100);return`<tr><td>${n}</td><td style="text-align:right">${p}%</td><td style="text-align:right">¥${fmt(f)}</td><td style="text-align:right">¥${fmt(f+t)}</td></tr>`;}).join('')}</tbody></table>`;
+  const cost    = Number(document.getElementById('c-cost')?.value || 0) * 10000;
+  const rate    = Number(document.getElementById('c-rate')?.value || 10);
+  const taxRate = Number(document.getElementById('c-tax')?.value  || 10);
+  const fee     = cost * rate / 100;
+  const tax     = Math.round(fee * taxRate / 100);
+  const rEl     = document.getElementById('c-result');
+  if (!rEl) return;
+  if (!cost) { rEl.innerHTML = ''; document.getElementById('c-phase-result').innerHTML = ''; return; }
+
+  rEl.innerHTML = `<div class="metrics metrics-3" style="margin-bottom:8px">
+    <div class="metric-card"><div class="metric-label">設計料（税抜）</div><div class="metric-value" style="font-size:18px">¥${fmt(fee)}</div></div>
+    <div class="metric-card"><div class="metric-label">消費税</div><div class="metric-value" style="font-size:18px">¥${fmt(tax)}</div></div>
+    <div class="metric-card"><div class="metric-label">設計料合計（税込）</div><div class="metric-value" style="font-size:18px">¥${fmt(fee + tax)}</div></div>
+  </div>`;
+
+  const phases = DEFAULT_PHASES.map((ph, i) => {
+    const ratio = Number(document.getElementById('c-p' + i)?.value || 0);
+    const f     = fee * ratio / 100;
+    const t     = Math.round(f * taxRate / 100);
+    return { name: ph.name, ratio, fee: f, fwt: f + t };
+  });
+  const totalRatio = phases.reduce((s, p) => s + p.ratio, 0);
+  const col = Math.abs(totalRatio - 100) < 0.01 ? '#27500A' : '#A32D2D';
+
+  document.getElementById('c-phase-result').innerHTML = `
+    <table>
+      <thead><tr><th>フェーズ</th><th style="text-align:right">割合</th><th style="text-align:right">税抜金額</th><th style="text-align:right">税込金額</th></tr></thead>
+      <tbody>${phases.map(p => `<tr><td>${p.name}</td><td style="text-align:right">${p.ratio}%</td><td style="text-align:right">¥${fmt(p.fee)}</td><td style="text-align:right">¥${fmt(p.fwt)}</td></tr>`).join('')}</tbody>
+      <tfoot><tr style="font-weight:500;background:#f9f9f7">
+        <td>合計</td>
+        <td style="text-align:right;color:${col}">${totalRatio}%</td>
+        <td style="text-align:right">¥${fmt(fee)}</td>
+        <td style="text-align:right">¥${fmt(fee + tax)}</td>
+      </tr></tfoot>
+    </table>`;
 }
 
+// ===== Modal =====
 function closeModal() { document.getElementById('modal').classList.remove('show'); }
-document.getElementById('modal').addEventListener('click', e=>{ if(e.target===document.getElementById('modal')) closeModal(); });
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+
+// ===== Init =====
 render();
 </script>
 </body>
