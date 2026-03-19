@@ -92,6 +92,12 @@ input[readonly] { background: #f5f4f0; color: #666; }
 .icon-btn:hover      { color: #A32D2D; background: #FCEBEB; }
 .icon-btn.edit:hover { color: #185FA5; background: #E6F1FB; }
 
+/* Drag & Drop */
+.drag-handle { cursor: grab; color: #ccc; font-size: 15px; text-align: center; width: 20px; user-select: none; }
+.drag-handle:hover { color: #888; }
+.phase-tbl tr.ph-dragging { opacity: 0.35; }
+.phase-tbl tr.ph-drag-over { box-shadow: inset 0 -2px 0 #185FA5; }
+
 /* Info box */
 .info-box { background: #f5f4f0; border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
 
@@ -398,6 +404,7 @@ function openProjectModal(id) {
     <div style="overflow-x:auto">
       <table class="phase-tbl">
         <thead><tr>
+          <th style="width:20px"></th>
           <th style="min-width:120px">フェーズ名</th>
           <th style="text-align:right;width:56px">按分%</th>
           <th style="text-align:right;width:110px">税抜（円）</th>
@@ -424,7 +431,10 @@ function openProjectModal(id) {
 
 function phaseRowHtml(ph) {
   const statusOpts = STATUS_PHASE.map(s => `<option${ph.status === s ? ' selected' : ''}>${s}</option>`).join('');
-  return `<tr id="phrow-${ph.id}">
+  return `<tr id="phrow-${ph.id}" draggable="true"
+    ondragstart="phDragStart(event)" ondragover="phDragOver(event)"
+    ondragleave="phDragLeave(event)" ondrop="phDrop(event)" ondragend="phDragEnd(event)">
+    <td class="drag-handle" title="ドラッグして並び替え">⠿</td>
     <td><input value="${ph.name}"></td>
     <td><input type="number" id="ph-ratio-${ph.id}" style="text-align:right" value="${ph.ratio}" min="0" max="100" oninput="recalcPhases()"></td>
     <td><input type="number" id="ph-fee-${ph.id}"   style="text-align:right" value="${ph.fee || 0}" oninput="onManualFee('${ph.id}')"></td>
@@ -783,6 +793,48 @@ function calcFee() {
         <td style="text-align:right">¥${fmt(fee + tax)}</td>
       </tr></tfoot>
     </table>`;
+}
+
+// ===== Phase Drag & Drop =====
+let _dragSrc = null;
+
+function phDragStart(e) {
+  _dragSrc = e.currentTarget;
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', _dragSrc.id);
+  setTimeout(() => _dragSrc?.classList.add('ph-dragging'), 0);
+}
+
+function phDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  const row = e.currentTarget;
+  if (row !== _dragSrc) row.classList.add('ph-drag-over');
+}
+
+function phDragLeave(e) {
+  e.currentTarget.classList.remove('ph-drag-over');
+}
+
+function phDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  const target = e.currentTarget;
+  target.classList.remove('ph-drag-over');
+  if (!_dragSrc || _dragSrc === target) return;
+  const tbody = target.closest('tbody');
+  const rows  = Array.from(tbody.querySelectorAll('tr'));
+  const si    = rows.indexOf(_dragSrc);
+  const ti    = rows.indexOf(target);
+  if (si < ti) tbody.insertBefore(_dragSrc, target.nextSibling);
+  else         tbody.insertBefore(_dragSrc, target);
+  updatePhaseTotal();
+}
+
+function phDragEnd(e) {
+  _dragSrc?.classList.remove('ph-dragging');
+  document.querySelectorAll('#phase-tbody tr').forEach(r => r.classList.remove('ph-drag-over'));
+  _dragSrc = null;
 }
 
 // ===== Modal =====
