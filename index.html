@@ -218,8 +218,10 @@ async function loginEngineer() {
 }
 
 async function logout() {
-  if (isOwner()) await sb.auth.signOut();
-  else { localStorage.removeItem('dfm2_role'); showAuthScreen(); }
+  localStorage.removeItem('dfm2_role');
+  state.projects = []; state.payments = []; state.financeMap = {};
+  if (isOwner()) sb.auth.signOut().catch(() => {}); // fire & forget
+  showAuthScreen();
 }
 
 // ===== Constants =====
