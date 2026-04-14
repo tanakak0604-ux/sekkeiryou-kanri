@@ -104,6 +104,7 @@ input[readonly] { background: #f5f4f0; color: #666; }
     <div class="nav-item" onclick="switchPage('invoices')"  id="nav-invoices">◻ 請求書一覧</div>
     <div class="nav-item" onclick="switchPage('payments')"  id="nav-payments">◻ 入金管理</div>
     <div class="nav-item" onclick="switchPage('calc')"      id="nav-calc">◻ 報酬計算</div>
+    <div class="nav-item" id="nav-cashflow" onclick="switchPage('cashflow')" style="display:none">◻ キャッシュフロー</div>
   </div>
   <div class="main">
     <div class="topbar">
@@ -138,6 +139,7 @@ input[readonly] { background: #f5f4f0; color: #666; }
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
 // ===== Supabase =====
 const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
@@ -284,9 +286,10 @@ function switchPage(p) {
 }
 
 function render() {
-  const titles = { dashboard:'ダッシュボード', projects:'案件管理', invoices:'請求書一覧', payments:'入金管理', calc:'報酬計算' };
+  const titles = { dashboard:'ダッシュボード', projects:'案件管理', invoices:'請求書一覧', payments:'入金管理', calc:'報酬計算', cashflow:'キャッシュフロー' };
   document.getElementById('page-title').textContent  = titles[state.page] || '';
   document.getElementById('role-badge').textContent  = isOwner() ? '担当者' : 'エンジニア';
+  document.getElementById('nav-cashflow').style.display = isOwner() ? '' : 'none';
   const actionEl  = document.getElementById('topbar-action');
   const contentEl = document.getElementById('main-content');
   if      (state.page === 'dashboard') { actionEl.innerHTML = ''; renderDashboard(contentEl); }
@@ -294,6 +297,7 @@ function render() {
   else if (state.page === 'invoices')  { actionEl.innerHTML = ''; renderInvoices(contentEl); }
   else if (state.page === 'payments')  { actionEl.innerHTML = ''; renderPayments(contentEl); }
   else if (state.page === 'calc')      { actionEl.innerHTML = ''; renderCalc(contentEl); }
+  else if (state.page === 'cashflow')  { actionEl.innerHTML = ''; renderCashflow(contentEl); }
 }
 
 // ===== Dashboard =====
@@ -377,6 +381,10 @@ function openProjectDetail(id) {
   if (!p) return;
   const t       = projectTotals(p);
   const finance = state.financeMap[id];
+  const detailSubs = finance?.subcontractors || [];
+  const detailOrds = finance?.orders || [];
+  const totalSubAmt = detailSubs.reduce((s,x)=>s+Number(x.amount||0),0);
+  const totalOrdAmt = detailOrds.reduce((s,x)=>s+Number(x.amount||0),0);
   const phaseRows = getMergedPhases(p).map(ph => {
     const paid    = phasePaid(ph.id);
     const balance = Number(ph.feeWithTax || 0) - paid;
@@ -408,7 +416,8 @@ function openProjectDetail(id) {
         <th style="text-align:right">税抜</th><th style="text-align:right">税込</th>
         <th>請求書番号</th><th>発行日</th><th>支払期日</th><th>状況</th><th style="text-align:right">残高</th>
       </tr></thead><tbody>${phaseRows}</tbody></table>
-    </div>`;
+    </div>
+    ${isOwner() && finance ? detailFinanceSectionHtml(detailSubs, detailOrds, totalSubAmt, totalOrdAmt, t) : ''}`;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn" onclick="closeModal()">閉じる</button>
     ${isOwner() ? `<button class="btn btn-primary" onclick="closeModal();openProjectModal('${id}')">編集</button>` : ''}`;
@@ -422,6 +431,28 @@ function openProjectModal(id) {
     id: genId(), name: ph.name, ratio: ph.ratio, fee: 0, feeWithTax: 0,
     invoiceNumber: '', issueDate: '', dueDate: '', status: '未発行',
   }));
+  const subs = finance?.subcontractors?.length
+    ? finance.subcontractors
+    : [{ id:genId(), name:'構造外注費', amount:0, date:'' }, { id:genId(), name:'設備外注費', amount:0, date:'' }];
+  const ords = finance?.orders || [];
+  const subAndOrderSection = isOwner() ? `
+    <hr class="divider">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:500;color:#444">外注費</div>
+      <button class="btn btn-sm" type="button" onclick="addSubRow()">+ 追加</button>
+    </div>
+    <table class="phase-tbl"><thead><tr>
+      <th>名称</th><th style="text-align:right;width:140px">金額（円）</th><th style="width:130px">支払予定日</th><th style="width:28px"></th>
+    </tr></thead><tbody id="sub-tbody">${subs.map(s=>subRowHtml(s)).join('')}</tbody></table>
+    <hr class="divider">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+      <div style="font-size:12px;font-weight:500;color:#444">注文書</div>
+      <button class="btn btn-sm" type="button" onclick="addOrderRow()">+ 追加</button>
+    </div>
+    <table class="phase-tbl"><thead><tr>
+      <th>注文書名</th><th style="text-align:right;width:140px">売上金額（円）</th><th style="width:130px">日付</th><th style="width:28px"></th>
+    </tr></thead><tbody id="ord-tbody">${ords.map(o=>orderRowHtml(o)).join('')}</tbody></table>
+  ` : '';
 
   const financialSection = isOwner() ? `
     <hr class="divider">
@@ -470,6 +501,7 @@ function openProjectModal(id) {
       </table>
     </div>
     <div id="phase-total" style="text-align:right;font-size:12px;color:#888;margin-top:6px"></div>
+    ${subAndOrderSection}
     <div class="form-group" style="margin-top:14px"><label class="form-label">メモ</label><textarea id="fp-memo">${p?.memo||''}</textarea></div>`;
   document.getElementById('modal-footer').innerHTML = `
     <button class="btn" onclick="closeModal()">キャンセル</button>
@@ -550,6 +582,97 @@ function addPhaseRow() {
 
 function removePhaseRow(id) { document.getElementById('phrow-'+id)?.remove(); updatePhaseTotal(); }
 
+function subRowHtml(s) {
+  return `<tr id="subrow-${s.id}">
+    <td><input id="sub-name-${s.id}" value="${s.name}"></td>
+    <td><input id="sub-amt-${s.id}" type="number" style="text-align:right" value="${s.amount||0}"></td>
+    <td><input id="sub-date-${s.id}" type="date" value="${s.date||''}"></td>
+    <td><button class="icon-btn" type="button" onclick="removeSubRow('${s.id}')">✕</button></td>
+  </tr>`;
+}
+function orderRowHtml(o) {
+  return `<tr id="ordrow-${o.id}">
+    <td><input id="ord-name-${o.id}" value="${o.name}"></td>
+    <td><input id="ord-amt-${o.id}" type="number" style="text-align:right" value="${o.amount||0}"></td>
+    <td><input id="ord-date-${o.id}" type="date" value="${o.date||''}"></td>
+    <td><button class="icon-btn" type="button" onclick="removeOrderRow('${o.id}')">✕</button></td>
+  </tr>`;
+}
+function addSubRow() {
+  const tbody = document.getElementById('sub-tbody');
+  if (!tbody) return;
+  const s = { id:genId(), name:'その他外注費', amount:0, date:'' };
+  const tmp = document.createElement('tbody');
+  tmp.innerHTML = subRowHtml(s);
+  tbody.appendChild(tmp.firstElementChild);
+}
+function removeSubRow(id) { document.getElementById('subrow-'+id)?.remove(); }
+function addOrderRow() {
+  const tbody = document.getElementById('ord-tbody');
+  if (!tbody) return;
+  const o = { id:genId(), name:'注文書', amount:0, date:'' };
+  const tmp = document.createElement('tbody');
+  tmp.innerHTML = orderRowHtml(o);
+  tbody.appendChild(tmp.firstElementChild);
+}
+function removeOrderRow(id) { document.getElementById('ordrow-'+id)?.remove(); }
+function getEditSubcontractors() {
+  const tbody = document.getElementById('sub-tbody');
+  if (!tbody) return [];
+  return Array.from(tbody.querySelectorAll('tr')).map(row => {
+    const id = row.id.replace('subrow-','');
+    return { id, name:document.getElementById('sub-name-'+id)?.value||'', amount:Number(document.getElementById('sub-amt-'+id)?.value||0), date:document.getElementById('sub-date-'+id)?.value||'' };
+  });
+}
+function getEditOrders() {
+  const tbody = document.getElementById('ord-tbody');
+  if (!tbody) return [];
+  return Array.from(tbody.querySelectorAll('tr')).map(row => {
+    const id = row.id.replace('ordrow-','');
+    return { id, name:document.getElementById('ord-name-'+id)?.value||'', amount:Number(document.getElementById('ord-amt-'+id)?.value||0), date:document.getElementById('ord-date-'+id)?.value||'' };
+  });
+}
+function detailFinanceSectionHtml(subs, ords, totalSubAmt, totalOrdAmt, t) {
+  const grossProfit = t.totalFee - totalSubAmt;
+  const subRows = subs.length ? subs.map(s=>`<tr>
+    <td>${s.name}</td>
+    <td style="text-align:right">¥${fmt(s.amount||0)}</td>
+    <td>${fmtDate(s.date)}</td>
+  </tr>`).join('') : `<tr><td colspan="3" style="color:#aaa;text-align:center;padding:10px">外注費なし</td></tr>`;
+  const ordRows = ords.length ? ords.map(o=>`<tr>
+    <td>${o.name}</td>
+    <td style="text-align:right">¥${fmt(o.amount||0)}</td>
+    <td>${fmtDate(o.date)}</td>
+  </tr>`).join('') : `<tr><td colspan="3" style="color:#aaa;text-align:center;padding:10px">注文書なし</td></tr>`;
+  return `
+    <hr class="divider">
+    <div style="font-size:12px;font-weight:500;color:#444;margin-bottom:8px">外注費</div>
+    <div style="overflow-x:auto">
+      <table class="phase-tbl"><thead><tr>
+        <th>名称</th><th style="text-align:right">金額</th><th>支払予定日</th>
+      </tr></thead><tbody>${subRows}</tbody>
+      <tfoot><tr style="font-weight:500;background:#f9f9f7">
+        <td>合計</td><td style="text-align:right">¥${fmt(totalSubAmt)}</td><td></td>
+      </tr></tfoot></table>
+    </div>
+    <hr class="divider">
+    <div style="font-size:12px;font-weight:500;color:#444;margin-bottom:8px">注文書</div>
+    <div style="overflow-x:auto">
+      <table class="phase-tbl"><thead><tr>
+        <th>注文書名</th><th style="text-align:right">売上金額</th><th>日付</th>
+      </tr></thead><tbody>${ordRows}</tbody>
+      <tfoot><tr style="font-weight:500;background:#f9f9f7">
+        <td>合計</td><td style="text-align:right">¥${fmt(totalOrdAmt)}</td><td></td>
+      </tr></tfoot></table>
+    </div>
+    <hr class="divider">
+    <div class="metrics metrics-3" style="margin-top:0">
+      <div class="metric-card"><div class="metric-label">設計料合計（税込）</div><div class="metric-value" style="font-size:16px">¥${fmt(t.totalFee)}</div></div>
+      <div class="metric-card"><div class="metric-label">外注費合計</div><div class="metric-value" style="font-size:16px;color:#A32D2D">¥${fmt(totalSubAmt)}</div></div>
+      <div class="metric-card"><div class="metric-label">粗利（設計料 - 外注費）</div><div class="metric-value" style="font-size:16px;color:${grossProfit>=0?'#27500A':'#A32D2D'}">¥${fmt(grossProfit)}</div></div>
+    </div>`;
+}
+
 function getEditPhases(projectId) {
   const tbody = document.getElementById('phase-tbody');
   if (!tbody) return [];
@@ -607,6 +730,8 @@ async function saveProject(id) {
       fee_rate:          Number(document.getElementById('fp-feeRate')?.value || finance?.fee_rate             || 0),
       tax_rate:          document.getElementById('fp-taxRate')?.value        || finance?.tax_rate             || '10',
       phases_finance:    phasesFinance,
+      subcontractors:    getEditSubcontractors(),
+      orders:            getEditOrders(),
     });
     if (fErr) { alert('金額情報の保存に失敗しました'); console.error(fErr); return; }
   }
@@ -855,6 +980,85 @@ function calcFee() {
         <td style="text-align:right">¥${fmtSec(fee)}</td><td style="text-align:right">¥${fmtSec(fee+tax)}</td>
       </tr></tfoot>
     </table>`;
+}
+
+// ===== Cashflow =====
+let _cfChart = null;
+function renderCashflow(el) {
+  const now = new Date();
+  if (state.cashflowYear === undefined) {
+    state.cashflowYear = now.getMonth() >= 5 ? now.getFullYear() : now.getFullYear() - 1;
+  }
+  const year = state.cashflowYear;
+  // 6月スタートの12ヶ月
+  const months = Array.from({length:12}, (_,i) => {
+    const d = new Date(year, 5 + i, 1);
+    return { label:`${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}`, year:d.getFullYear(), month:d.getMonth() };
+  });
+  const paym = new Array(12).fill(0);
+  const ordm = new Array(12).fill(0);
+  const subm = new Array(12).fill(0);
+  state.payments.forEach(p => {
+    if (!p.date) return;
+    const d = new Date(p.date);
+    const idx = months.findIndex(m => m.year===d.getFullYear() && m.month===d.getMonth());
+    if (idx >= 0) paym[idx] += Number(p.amount||0);
+  });
+  Object.values(state.financeMap).forEach(f => {
+    (f.orders||[]).forEach(o => {
+      if (!o.date) return;
+      const d = new Date(o.date);
+      const idx = months.findIndex(m => m.year===d.getFullYear() && m.month===d.getMonth());
+      if (idx >= 0) ordm[idx] += Number(o.amount||0);
+    });
+    (f.subcontractors||[]).forEach(s => {
+      if (!s.date) return;
+      const d = new Date(s.date);
+      const idx = months.findIndex(m => m.year===d.getFullYear() && m.month===d.getMonth());
+      if (idx >= 0) subm[idx] += Number(s.amount||0);
+    });
+  });
+  el.innerHTML = `
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <button class="btn btn-sm" onclick="state.cashflowYear--;render()">◀ 前期</button>
+      <span style="font-size:14px;font-weight:500">${year}年6月 〜 ${year+1}年5月</span>
+      <button class="btn btn-sm" onclick="state.cashflowYear++;render()">次期 ▶</button>
+    </div>
+    <div class="section">
+      <div class="section-header">
+        <span class="section-title">キャッシュフロー（月別）</span>
+        <span class="sub-text">上：入金 ／ 下：支払</span>
+      </div>
+      <div style="padding:20px;position:relative;height:440px"><canvas id="cf-canvas"></canvas></div>
+    </div>`;
+  if (_cfChart) { _cfChart.destroy(); _cfChart = null; }
+  const ctx = document.getElementById('cf-canvas').getContext('2d');
+  _cfChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: months.map(m => m.label),
+      datasets: [
+        { label:'入金（フェーズ）', data:paym, backgroundColor:'rgba(24,95,165,0.75)', stack:'income' },
+        { label:'注文書売上',       data:ordm, backgroundColor:'rgba(39,128,10,0.75)',  stack:'income' },
+        { label:'外注費',           data:subm.map(v=>-v), backgroundColor:'rgba(163,45,45,0.75)', stack:'expense' },
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position:'top' },
+        tooltip: { callbacks: { label: c=>`${c.dataset.label}: ¥${Math.abs(c.raw).toLocaleString('ja-JP')}` } }
+      },
+      scales: {
+        x: { stacked: true },
+        y: {
+          stacked: true,
+          ticks: { callback: v => `¥${(Math.abs(v)/10000).toLocaleString('ja-JP')}万` }
+        }
+      }
+    }
+  });
 }
 
 // ===== Phase Drag & Drop =====
