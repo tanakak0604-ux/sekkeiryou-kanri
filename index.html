@@ -153,58 +153,41 @@ const _sbFetch = (url, options = {}) => {
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
 };
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: false, detectSessionInUrl: true },
+  auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
   global: { fetch: _sbFetch }
 });
 
 // ===== Auth =====
-function isOwner() { return sessionStorage.getItem('dfm2_role') === 'owner'; }
-
-// sessionStorage から直接 JWT を読み取り、有効期限をネットワークなしで確認
-function _readStoredSession() {
-  try {
-    const raw = sessionStorage.getItem('sb-sfvoizvsypkktcsxocez-auth-token');
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
-}
-function _tokenValid(session) {
-  if (!session?.access_token) return false;
-  try {
-    const b64 = session.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
-    const exp = JSON.parse(atob(b64)).exp;
-    return exp > Date.now() / 1000 + 30;
-  } catch { return false; }
-}
+function isOwner() { return localStorage.getItem('dfm2_role') === 'owner'; }
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'INITIAL_SESSION') {
-    // クライアント初期化完了 → ここで初めてデータ読み込み可能
-    if (session && _tokenValid(session)) {
-      sessionStorage.setItem('dfm2_role', 'owner');
+  if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
+    if (session) {
+      localStorage.setItem('dfm2_role', 'owner');
       document.getElementById('auth-overlay').style.display = 'none';
       await loadData(); render();
-    } else if (sessionStorage.getItem('dfm2_role') === 'engineer') {
-      await loadData(); render();
-    } else {
-      sessionStorage.removeItem('dfm2_role');
-      showAuthScreen();
+    } else if (event === 'INITIAL_SESSION') {
+      if (localStorage.getItem('dfm2_role') === 'engineer') {
+        document.getElementById('auth-overlay').style.display = 'none';
+        await loadData(); render();
+      } else {
+        localStorage.removeItem('dfm2_role');
+        showAuthScreen();
+      }
     }
     return;
   }
-  if (event === 'SIGNED_IN') {
-    sessionStorage.setItem('dfm2_role', 'owner');
-    document.getElementById('auth-overlay').style.display = 'none';
-    await loadData(); render();
-  } else if (event === 'SIGNED_OUT') {
-    sessionStorage.removeItem('dfm2_role');
+  if (event === 'SIGNED_OUT') {
+    localStorage.removeItem('dfm2_role');
     state.projects = []; state.payments = []; state.financeMap = {};
     showAuthScreen();
   }
 });
 
 async function checkAuth() {
-  if (sessionStorage.getItem('dfm2_role') === 'engineer') return; // INITIAL_SESSION で処理
-  showAuthScreen(); // デフォルト表示（INITIAL_SESSION が有効なら上書き）
+  // INITIAL_SESSION イベントがすべての認証を処理するため、ここはエンジニア用のみ
+  if (localStorage.getItem('dfm2_role') === 'engineer') return;
+  showAuthScreen(); // INITIAL_SESSION が来るまでのデフォルト表示
 }
 
 function showAuthScreen() {
@@ -229,14 +212,14 @@ async function loginOwner() {
 }
 
 async function loginEngineer() {
-  sessionStorage.setItem('dfm2_role', 'engineer');
+  localStorage.setItem('dfm2_role', 'engineer');
   document.getElementById('auth-overlay').style.display = 'none';
   await loadData(); render();
 }
 
 async function logout() {
   if (isOwner()) await sb.auth.signOut();
-  else { sessionStorage.removeItem('dfm2_role'); showAuthScreen(); }
+  else { localStorage.removeItem('dfm2_role'); showAuthScreen(); }
 }
 
 // ===== Constants =====
