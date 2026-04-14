@@ -154,6 +154,17 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 // ===== Auth =====
 function isOwner() { return sessionStorage.getItem('dfm2_role') === 'owner'; }
 
+function withTimeout(promise, ms = 8000) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('sb_timeout')), ms))
+  ]);
+}
+function handleSbTimeout() {
+  sessionStorage.clear();
+  location.reload();
+}
+
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN') {
     sessionStorage.setItem('dfm2_role', 'owner');
@@ -167,10 +178,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    sessionStorage.setItem('dfm2_role', 'owner');
-    await loadData(); render(); return;
+  try {
+    const { data: { session } } = await withTimeout(sb.auth.getSession());
+    if (session) {
+      sessionStorage.setItem('dfm2_role', 'owner');
+      await loadData(); render(); return;
+    }
+  } catch(e) {
+    if (e.message === 'sb_timeout') { handleSbTimeout(); return; }
   }
   if (sessionStorage.getItem('dfm2_role') === 'engineer') {
     await loadData(); render(); return;
@@ -227,16 +242,21 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
-  state.projects = projects || [];
-  if (isOwner()) {
-    const { data: finances } = await sb.from('projects_finance').select('*');
-    state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-    const { data: payments } = await sb.from('payments').select('*').order('date');
-    state.payments = payments || [];
-  } else {
-    state.financeMap = {};
-    state.payments   = [];
+  try {
+    const { data: projects } = await withTimeout(sb.from('projects').select('*').order('sort_order'));
+    state.projects = projects || [];
+    if (isOwner()) {
+      const { data: finances } = await withTimeout(sb.from('projects_finance').select('*'));
+      state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
+      const { data: payments } = await withTimeout(sb.from('payments').select('*').order('date'));
+      state.payments = payments || [];
+    } else {
+      state.financeMap = {};
+      state.payments   = [];
+    }
+  } catch(e) {
+    if (e.message === 'sb_timeout') { handleSbTimeout(); return; }
+    throw e;
   }
 }
 
