@@ -149,45 +149,57 @@ const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdm9penZzeXBra3Rjc3hvY2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDMzMzAsImV4cCI6MjA5MTYxOTMzMH0.5PX9WDNkqEHxRp8IjPzekCA2ZyQ_5ntOSm5O4NJhXrI';
 const _sbFetch = (url, options = {}) => {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 5000);
+  const id = setTimeout(() => controller.abort(), 8000);
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
 };
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: false, detectSessionInUrl: true },
   global: { fetch: _sbFetch }
 });
 
 // ===== Auth =====
 function isOwner() { return sessionStorage.getItem('dfm2_role') === 'owner'; }
 
+// sessionStorage から直接 JWT を読み取り、有効期限をネットワークなしで確認
+function _readStoredSession() {
+  try {
+    const raw = sessionStorage.getItem('sb-sfvoizvsypkktcsxocez-auth-token');
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
+}
+function _tokenValid(session) {
+  if (!session?.access_token) return false;
+  try {
+    const exp = JSON.parse(atob(session.access_token.split('.')[1])).exp;
+    return exp > Date.now() / 1000 + 30;
+  } catch { return false; }
+}
+
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN') {
     sessionStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
     await loadData(); render();
-  } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
+  } else if (event === 'SIGNED_OUT') {
     sessionStorage.removeItem('dfm2_role');
     state.projects = []; state.payments = []; state.financeMap = {};
     showAuthScreen();
   }
 });
 
-function _isAbortError(e) { return e?.name === 'AbortError' || e?.message?.includes('abort') || e?.cause?.name === 'AbortError'; }
-function _onSessionError() { sessionStorage.clear(); location.reload(); }
-
 async function checkAuth() {
-  try {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session) {
-      sessionStorage.setItem('dfm2_role', 'owner');
-      await loadData(); render(); return;
-    }
-  } catch(e) {
-    if (_isAbortError(e)) { _onSessionError(); return; }
+  // ネットワーク通信なしで sessionStorage の JWT を直接確認
+  const stored = _readStoredSession();
+  if (_tokenValid(stored)) {
+    sessionStorage.setItem('dfm2_role', 'owner');
+    await loadData(); render(); return;
+  }
+  if (stored && !_tokenValid(stored)) {
+    // トークン期限切れ → セッションクリアしてログイン画面
+    sessionStorage.clear(); showAuthScreen(); return;
   }
   if (sessionStorage.getItem('dfm2_role') === 'engineer') {
-    try { await loadData(); render(); } catch(e) { if (_isAbortError(e)) _onSessionError(); }
-    return;
+    await loadData(); render(); return;
   }
   showAuthScreen();
 }
@@ -241,21 +253,16 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  try {
-    const { data: projects } = await sb.from('projects').select('*').order('sort_order');
-    state.projects = projects || [];
-    if (isOwner()) {
-      const { data: finances } = await sb.from('projects_finance').select('*');
-      state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-      const { data: payments } = await sb.from('payments').select('*').order('date');
-      state.payments = payments || [];
-    } else {
-      state.financeMap = {};
-      state.payments   = [];
-    }
-  } catch(e) {
-    if (_isAbortError(e)) { _onSessionError(); return; }
-    throw e;
+  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
+  state.projects = projects || [];
+  if (isOwner()) {
+    const { data: finances } = await sb.from('projects_finance').select('*');
+    state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
+    const { data: payments } = await sb.from('payments').select('*').order('date');
+    state.payments = payments || [];
+  } else {
+    state.financeMap = {};
+    state.payments   = [];
   }
 }
 
