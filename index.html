@@ -177,6 +177,20 @@ function _tokenValid(session) {
 }
 
 sb.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'INITIAL_SESSION') {
+    // クライアント初期化完了 → ここで初めてデータ読み込み可能
+    if (session && _tokenValid(session)) {
+      sessionStorage.setItem('dfm2_role', 'owner');
+      document.getElementById('auth-overlay').style.display = 'none';
+      await loadData(); render();
+    } else if (sessionStorage.getItem('dfm2_role') === 'engineer') {
+      await loadData(); render();
+    } else {
+      sessionStorage.removeItem('dfm2_role');
+      showAuthScreen();
+    }
+    return;
+  }
   if (event === 'SIGNED_IN') {
     sessionStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
@@ -189,20 +203,8 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
-  // ネットワーク通信なしで sessionStorage の JWT を直接確認
-  const stored = _readStoredSession();
-  if (_tokenValid(stored)) {
-    sessionStorage.setItem('dfm2_role', 'owner');
-    await loadData(); render(); return;
-  }
-  if (stored && !_tokenValid(stored)) {
-    // トークン期限切れ → セッションクリアしてログイン画面
-    sessionStorage.clear(); showAuthScreen(); return;
-  }
-  if (sessionStorage.getItem('dfm2_role') === 'engineer') {
-    await loadData(); render(); return;
-  }
-  showAuthScreen();
+  if (sessionStorage.getItem('dfm2_role') === 'engineer') return; // INITIAL_SESSION で処理
+  showAuthScreen(); // デフォルト表示（INITIAL_SESSION が有効なら上書き）
 }
 
 function showAuthScreen() {
