@@ -3,6 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>設計料管理 | Design Fee Manager</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -50,7 +53,7 @@ tr:hover td { background: #f9f9f7; }
 .progress-bar  { height: 100%; border-radius: 4px; background: #185FA5; }
 .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 100; align-items: center; justify-content: center; }
 .modal-overlay.show { display: flex; }
-.modal { background: #fff; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.1); width: 900px; max-width: 97vw; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; }
+.modal { background: #fff; border-radius: 12px; border: 0.5px solid rgba(0,0,0,0.1); width: 1000px; max-width: 97vw; max-height: 92vh; overflow-y: auto; display: flex; flex-direction: column; }
 .modal-header { padding: 16px 20px; border-bottom: 0.5px solid rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: #fff; z-index: 1; flex-shrink: 0; }
 .modal-title { font-size: 14px; font-weight: 500; }
 .modal-body { padding: 20px; flex: 1; }
@@ -458,7 +461,7 @@ function openProjectModal(id) {
     <hr class="divider">
     <div class="form-row-3">
       <div class="form-group"><label class="form-label">工事費用（税抜・円）</label><input id="fp-cost" type="number" value="${finance?.construction_cost || ''}" placeholder="30000000" oninput="recalcPhases()"></div>
-      <div class="form-group"><label class="form-label">設計料率（%）</label><input id="fp-feeRate" type="number" value="${finance?.fee_rate ?? 10}" step="0.1" oninput="recalcPhases()"></div>
+      <div class="form-group"><label class="form-label">設計料率（%）</label><input id="fp-feeRate" type="number" value="${finance?.fee_rate ?? 15}" step="0.1" oninput="recalcPhases()"></div>
       <div class="form-group"><label class="form-label">消費税率</label>
         <select id="fp-taxRate" onchange="recalcPhases()">
           <option value="10"${(!finance||finance.tax_rate==='10')?' selected':''}>10%</option>
@@ -934,7 +937,7 @@ function renderCalc(el) {
       <div style="padding:20px">
         <div class="form-row-3">
           <div class="form-group"><label class="form-label">工事費用（税抜・万円）</label><input id="c-cost" type="number" placeholder="例：3000" oninput="calcFee()"></div>
-          <div class="form-group"><label class="form-label">設計料率（%）</label><input id="c-rate" type="number" value="10" step="0.5" oninput="calcFee()"></div>
+          <div class="form-group"><label class="form-label">設計料率（%）</label><input id="c-rate" type="number" value="15" step="0.5" oninput="calcFee()"></div>
           <div class="form-group"><label class="form-label">消費税率</label>
             <select id="c-tax" onchange="calcFee()">
               <option value="10">10%</option><option value="8">8%</option><option value="0">非課税</option>
