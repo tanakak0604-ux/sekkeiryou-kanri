@@ -149,7 +149,7 @@ const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdm9penZzeXBra3Rjc3hvY2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDMzMzAsImV4cCI6MjA5MTYxOTMzMH0.5PX9WDNkqEHxRp8IjPzekCA2ZyQ_5ntOSm5O4NJhXrI';
 const _sbFetch = (url, options = {}) => {
   const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 10000);
+  const id = setTimeout(() => controller.abort(), 5000);
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
 };
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
@@ -172,14 +172,22 @@ sb.auth.onAuthStateChange(async (event, session) => {
   }
 });
 
+function _isAbortError(e) { return e?.name === 'AbortError' || e?.message?.includes('abort') || e?.cause?.name === 'AbortError'; }
+function _onSessionError() { sessionStorage.clear(); location.reload(); }
+
 async function checkAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    sessionStorage.setItem('dfm2_role', 'owner');
-    await loadData(); render(); return;
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) {
+      sessionStorage.setItem('dfm2_role', 'owner');
+      await loadData(); render(); return;
+    }
+  } catch(e) {
+    if (_isAbortError(e)) { _onSessionError(); return; }
   }
   if (sessionStorage.getItem('dfm2_role') === 'engineer') {
-    await loadData(); render(); return;
+    try { await loadData(); render(); } catch(e) { if (_isAbortError(e)) _onSessionError(); }
+    return;
   }
   showAuthScreen();
 }
@@ -233,16 +241,21 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
-  state.projects = projects || [];
-  if (isOwner()) {
-    const { data: finances } = await sb.from('projects_finance').select('*');
-    state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-    const { data: payments } = await sb.from('payments').select('*').order('date');
-    state.payments = payments || [];
-  } else {
-    state.financeMap = {};
-    state.payments   = [];
+  try {
+    const { data: projects } = await sb.from('projects').select('*').order('sort_order');
+    state.projects = projects || [];
+    if (isOwner()) {
+      const { data: finances } = await sb.from('projects_finance').select('*');
+      state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
+      const { data: payments } = await sb.from('payments').select('*').order('date');
+      state.payments = payments || [];
+    } else {
+      state.financeMap = {};
+      state.payments   = [];
+    }
+  } catch(e) {
+    if (_isAbortError(e)) { _onSessionError(); return; }
+    throw e;
   }
 }
 
