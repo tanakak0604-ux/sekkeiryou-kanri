@@ -161,23 +161,12 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 function isOwner() { return localStorage.getItem('dfm2_role') === 'owner'; }
 
 sb.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'INITIAL_SESSION' || event === 'SIGNED_IN') {
-    if (session) {
-      localStorage.setItem('dfm2_role', 'owner');
-      document.getElementById('auth-overlay').style.display = 'none';
-      await loadData(); render();
-    } else if (event === 'INITIAL_SESSION') {
-      if (localStorage.getItem('dfm2_role') === 'engineer') {
-        document.getElementById('auth-overlay').style.display = 'none';
-        await loadData(); render();
-      } else {
-        localStorage.removeItem('dfm2_role');
-        showAuthScreen();
-      }
-    }
-    return;
-  }
-  if (event === 'SIGNED_OUT') {
+  if (event === 'SIGNED_IN') {
+    localStorage.setItem('dfm2_role', 'owner');
+    document.getElementById('auth-overlay').style.display = 'none';
+    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
+    render();
+  } else if (event === 'SIGNED_OUT') {
     localStorage.removeItem('dfm2_role');
     state.projects = []; state.payments = []; state.financeMap = {};
     showAuthScreen();
@@ -185,9 +174,20 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
-  // INITIAL_SESSION イベントがすべての認証を処理するため、ここはエンジニア用のみ
-  if (localStorage.getItem('dfm2_role') === 'engineer') return;
-  showAuthScreen(); // INITIAL_SESSION が来るまでのデフォルト表示
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    localStorage.setItem('dfm2_role', 'owner');
+    document.getElementById('auth-overlay').style.display = 'none';
+    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
+    render();
+  } else if (localStorage.getItem('dfm2_role') === 'engineer') {
+    document.getElementById('auth-overlay').style.display = 'none';
+    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
+    render();
+  } else {
+    localStorage.removeItem('dfm2_role');
+    showAuthScreen();
+  }
 }
 
 function showAuthScreen() {
@@ -218,9 +218,10 @@ async function loginEngineer() {
 }
 
 async function logout() {
+  const wasOwner = isOwner();
   localStorage.removeItem('dfm2_role');
   state.projects = []; state.payments = []; state.financeMap = {};
-  if (isOwner()) sb.auth.signOut().catch(() => {}); // fire & forget
+  if (wasOwner) sb.auth.signOut().catch(() => {}); // fire & forget
   showAuthScreen();
 }
 
