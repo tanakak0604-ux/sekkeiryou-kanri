@@ -147,7 +147,9 @@ input[readonly] { background: #f5f4f0; color: #666; }
 // ===== Supabase =====
 const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdm9penZzeXBra3Rjc3hvY2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDMzMzAsImV4cCI6MjA5MTYxOTMzMH0.5PX9WDNkqEHxRp8IjPzekCA2ZyQ_5ntOSm5O4NJhXrI';
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+});
 
 // ===== Auth =====
 function isOwner() { return sessionStorage.getItem('dfm2_role') === 'owner'; }
