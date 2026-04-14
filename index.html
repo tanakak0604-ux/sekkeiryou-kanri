@@ -497,7 +497,7 @@ function openProjectModal(id) {
         ${isOwner() ? '<th style="text-align:right;width:56px">按分%</th><th style="text-align:right;width:110px">税抜（円）</th><th style="text-align:right;width:110px">税込（円）</th>' : ''}
         <th style="width:120px">請求書番号</th>
         <th style="width:108px">発行日</th><th style="width:108px">支払期日</th>
-        <th style="width:84px">状況</th>
+        <th style="width:110px">状況</th>
         ${isOwner() ? '<th style="width:28px"></th>' : ''}
       </tr></thead>
       <tbody id="phase-tbody">${phases.map(ph => phaseRowHtml(ph)).join('')}</tbody>
