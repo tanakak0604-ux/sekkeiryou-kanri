@@ -147,30 +147,25 @@ input[readonly] { background: #f5f4f0; color: #666; }
 // ===== Supabase =====
 const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdm9penZzeXBra3Rjc3hvY2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDMzMzAsImV4cCI6MjA5MTYxOTMzMH0.5PX9WDNkqEHxRp8IjPzekCA2ZyQ_5ntOSm5O4NJhXrI';
+const _sbFetch = (url, options = {}) => {
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), 10000);
+  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
+};
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  auth: { storage: window.sessionStorage, persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+  global: { fetch: _sbFetch }
 });
 
 // ===== Auth =====
 function isOwner() { return sessionStorage.getItem('dfm2_role') === 'owner'; }
-
-function withTimeout(promise, ms = 8000) {
-  return Promise.race([
-    promise,
-    new Promise((_, reject) => setTimeout(() => reject(new Error('sb_timeout')), ms))
-  ]);
-}
-function handleSbTimeout() {
-  sessionStorage.clear();
-  location.reload();
-}
 
 sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN') {
     sessionStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
     await loadData(); render();
-  } else if (event === 'SIGNED_OUT') {
+  } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED' && !session) {
     sessionStorage.removeItem('dfm2_role');
     state.projects = []; state.payments = []; state.financeMap = {};
     showAuthScreen();
@@ -178,14 +173,10 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
-  try {
-    const { data: { session } } = await withTimeout(sb.auth.getSession());
-    if (session) {
-      sessionStorage.setItem('dfm2_role', 'owner');
-      await loadData(); render(); return;
-    }
-  } catch(e) {
-    if (e.message === 'sb_timeout') { handleSbTimeout(); return; }
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    sessionStorage.setItem('dfm2_role', 'owner');
+    await loadData(); render(); return;
   }
   if (sessionStorage.getItem('dfm2_role') === 'engineer') {
     await loadData(); render(); return;
@@ -242,21 +233,16 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  try {
-    const { data: projects } = await withTimeout(sb.from('projects').select('*').order('sort_order'));
-    state.projects = projects || [];
-    if (isOwner()) {
-      const { data: finances } = await withTimeout(sb.from('projects_finance').select('*'));
-      state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-      const { data: payments } = await withTimeout(sb.from('payments').select('*').order('date'));
-      state.payments = payments || [];
-    } else {
-      state.financeMap = {};
-      state.payments   = [];
-    }
-  } catch(e) {
-    if (e.message === 'sb_timeout') { handleSbTimeout(); return; }
-    throw e;
+  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
+  state.projects = projects || [];
+  if (isOwner()) {
+    const { data: finances } = await sb.from('projects_finance').select('*');
+    state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
+    const { data: payments } = await sb.from('payments').select('*').order('date');
+    state.payments = payments || [];
+  } else {
+    state.financeMap = {};
+    state.payments   = [];
   }
 }
 
