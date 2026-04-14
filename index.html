@@ -170,7 +170,8 @@ function _readStoredSession() {
 function _tokenValid(session) {
   if (!session?.access_token) return false;
   try {
-    const exp = JSON.parse(atob(session.access_token.split('.')[1])).exp;
+    const b64 = session.access_token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/');
+    const exp = JSON.parse(atob(b64)).exp;
     return exp > Date.now() / 1000 + 30;
   } catch { return false; }
 }
