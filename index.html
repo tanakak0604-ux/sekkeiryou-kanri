@@ -227,7 +227,7 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  const { data: projects } = await sb.from('projects').select('*').order('created_at');
+  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
   state.projects = projects || [];
   if (isOwner()) {
     const { data: finances } = await sb.from('projects_finance').select('*');
@@ -313,7 +313,7 @@ function renderDashboard(el) {
   const activeProj   = state.projects.filter(p => p.status === '進行中').length;
   const unpaidPhases = allPhases().filter(ph => Number(ph.feeWithTax || 0) > 0 && phaseBalance(ph) > 0);
 
-  const projRows = state.projects.slice().reverse().map(p => {
+  const projRows = state.projects.map(p => {
     const t   = projectTotals(p);
     const pct = t.activeCount > 0 ? Math.round(t.paidCount / t.activeCount * 100) : 0;
     return `<tr>
@@ -362,7 +362,9 @@ function renderProjects(el) {
   const rows = state.projects.map(p => {
     const t   = projectTotals(p);
     const pct = t.activeCount > 0 ? Math.round(t.paidCount / t.activeCount * 100) : 0;
-    return `<tr>
+    const drag = isOwner() ? 'draggable="true" ondragstart="projDragStart(event)" ondragover="projDragOver(event)" ondragleave="projDragLeave(event)" ondrop="projDrop(event)" ondragend="projDragEnd(event)"' : '';
+    return `<tr data-proj-id="${p.id}" ${drag}>
+      ${isOwner() ? '<td class="drag-handle">⠿</td>' : ''}
       <td><a style="color:#185FA5;cursor:pointer" onclick="openProjectDetail('${p.id}')">${p.name}</a></td>
       <td>${p.client || '—'}</td>
       <td style="text-align:right">¥${fmtSec(t.totalFee)}</td>
@@ -377,7 +379,7 @@ function renderProjects(el) {
   el.innerHTML = `<div class="section">
     <div class="section-header"><span class="section-title">案件一覧（${state.projects.length} 件）</span>${isOwner() ? '<button class="btn btn-primary" onclick="openProjectModal()">+ 新規案件</button>' : ''}</div>
     ${state.projects.length === 0 ? '<div class="empty-state">案件がありません。「+ 新規案件」から追加してください。</div>'
-      : `<table><thead><tr><th>案件名</th><th>クライアント</th><th style="text-align:right">設計料合計（税込）</th><th>フェーズ進捗</th><th>状況</th><th>操作</th></tr></thead><tbody>${rows}</tbody></table>`}
+      : `<table><thead><tr>${isOwner() ? '<th style="width:20px"></th>' : ''}<th>案件名</th><th>クライアント</th><th style="text-align:right">設計料合計（税込）</th><th>フェーズ進捗</th><th>状況</th><th>操作</th></tr></thead><tbody id="proj-tbody">${rows}</tbody></table>`}
   </div>`;
 }
 
@@ -715,8 +717,10 @@ async function saveProject(id) {
     ({ id,name,ratio,invoiceNumber,issueDate,dueDate,status })
   );
   const projectId = id || genId();
+  const sort_order = id ? undefined : (state.projects.length > 0 ? Math.max(...state.projects.map(p => p.sort_order ?? 0)) + 1 : 0);
   const { error: pErr } = await sb.from('projects').upsert({
     id: projectId, name,
+    ...(sort_order !== undefined ? { sort_order } : {}),
     client:          document.getElementById('fp-client').value||'',
     location:        document.getElementById('fp-location').value||'',
     status:          document.getElementById('fp-status').value,
@@ -1064,6 +1068,33 @@ function renderCashflow(el) {
       }
     }
   });
+}
+
+// ===== Project Drag & Drop =====
+let _projDragSrc = null;
+function projDragStart(e) { _projDragSrc=e.currentTarget; e.dataTransfer.effectAllowed='move'; e.dataTransfer.setData('text/plain',_projDragSrc.dataset.projId); setTimeout(()=>_projDragSrc?.classList.add('ph-dragging'),0); }
+function projDragOver(e)  { e.preventDefault(); e.dataTransfer.dropEffect='move'; if(e.currentTarget!==_projDragSrc) e.currentTarget.classList.add('ph-drag-over'); }
+function projDragLeave(e) { e.currentTarget.classList.remove('ph-drag-over'); }
+function projDrop(e) {
+  e.preventDefault(); e.stopPropagation();
+  const target=e.currentTarget; target.classList.remove('ph-drag-over');
+  if (!_projDragSrc||_projDragSrc===target) return;
+  const tbody=target.closest('tbody'), rows=Array.from(tbody.querySelectorAll('tr'));
+  const si=rows.indexOf(_projDragSrc), ti=rows.indexOf(target);
+  if (si<ti) tbody.insertBefore(_projDragSrc,target.nextSibling);
+  else       tbody.insertBefore(_projDragSrc,target);
+  saveProjectOrder();
+}
+function projDragEnd(e) { _projDragSrc?.classList.remove('ph-dragging'); document.querySelectorAll('#proj-tbody tr').forEach(r=>r.classList.remove('ph-drag-over')); _projDragSrc=null; }
+async function saveProjectOrder() {
+  const tbody = document.getElementById('proj-tbody');
+  if (!tbody) return;
+  const rows = Array.from(tbody.querySelectorAll('tr[data-proj-id]'));
+  const updates = rows.map((r, i) => ({ id: r.dataset.projId, sort_order: i }));
+  state.projects = updates.map(u => ({ ...state.projects.find(p=>p.id===u.id), sort_order: u.sort_order }));
+  for (const u of updates) {
+    await sb.from('projects').update({ sort_order: u.sort_order }).eq('id', u.id);
+  }
 }
 
 // ===== Phase Drag & Drop =====
