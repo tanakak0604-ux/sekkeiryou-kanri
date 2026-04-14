@@ -254,12 +254,20 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  const { data: projects } = await sb.from('projects').select('*').order('sort_order');
+  let { data: projects, error: pErr } = await sb.from('projects').select('*').order('sort_order');
+  if (pErr) {
+    console.warn('sort_order fallback:', pErr.message);
+    const res = await sb.from('projects').select('*');
+    projects = res.data;
+    if (res.error) console.error('loadData projects error:', res.error);
+  }
   state.projects = projects || [];
   if (isOwner()) {
-    const { data: finances } = await sb.from('projects_finance').select('*');
+    const { data: finances, error: fErr } = await sb.from('projects_finance').select('*');
+    if (fErr) console.error('loadData finance error:', fErr);
     state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-    const { data: payments } = await sb.from('payments').select('*').order('date');
+    const { data: payments, error: pyErr } = await sb.from('payments').select('*').order('date');
+    if (pyErr) console.error('loadData payments error:', pyErr);
     state.payments = payments || [];
   } else {
     state.financeMap = {};
