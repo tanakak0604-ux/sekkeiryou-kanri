@@ -153,9 +153,22 @@ const _sbFetch = (url, options = {}) => {
   return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
 };
 const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: false, detectSessionInUrl: true, lock: async (_n, _t, fn) => fn() },
+  auth: { persistSession: true, autoRefreshToken: false, detectSessionInUrl: true },
   global: { fetch: _sbFetch }
 });
+// localStorage からトークンを直接取得（Supabase JS 内部のロック問題を回避）
+const _STORAGE_KEY = `sb-${SUPABASE_URL.split('//')[1].split('.')[0]}-auth-token`;
+function _getToken() {
+  try { return JSON.parse(localStorage.getItem(_STORAGE_KEY) || '{}').access_token || SUPABASE_ANON_KEY; }
+  catch { return SUPABASE_ANON_KEY; }
+}
+async function _get(table, query = '') {
+  const res = await _sbFetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
+    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${_getToken()}` }
+  });
+  if (!res.ok) throw new Error(`${res.status}`);
+  return res.json();
+}
 
 // ===== Auth =====
 function isOwner() { return localStorage.getItem('dfm2_role') === 'owner'; }
@@ -164,8 +177,7 @@ sb.auth.onAuthStateChange(async (event, session) => {
   if (event === 'SIGNED_IN') {
     localStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
-    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
-    render();
+    await loadData(); render();
   } else if (event === 'SIGNED_OUT') {
     localStorage.removeItem('dfm2_role');
     state.projects = []; state.payments = []; state.financeMap = {};
@@ -174,20 +186,14 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
-  console.log('[dfm] checkAuth start');
   const { data: { session } } = await sb.auth.getSession();
-  console.log('[dfm] session:', session ? session.user?.email : 'null');
   if (session) {
     localStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
-    render();
-    try { await loadData(); } catch(e) { console.error('[dfm] loadData error:', e); }
-    render();
+    await loadData(); render();
   } else if (localStorage.getItem('dfm2_role') === 'engineer') {
     document.getElementById('auth-overlay').style.display = 'none';
-    render();
-    try { await loadData(); } catch(e) { console.error('[dfm] loadData error:', e); }
-    render();
+    await loadData(); render();
   } else {
     localStorage.removeItem('dfm2_role');
     showAuthScreen();
@@ -246,31 +252,15 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  console.log('[dfm] loadData start, isOwner:', isOwner());
-  let { data: projects, error: pErr } = await sb.from('projects').select('*').order('sort_order');
-  console.log('[dfm] projects:', projects?.length ?? 'null', 'error:', pErr?.message);
-  if (pErr) {
-    console.warn('sort_order fallback:', pErr.message);
-    const res = await sb.from('projects').select('*');
-    console.log('[dfm] projects fallback:', res.data?.length ?? 'null', 'error:', res.error?.message);
-    projects = res.data;
-    if (res.error) console.error('loadData projects error:', res.error);
-  }
-  state.projects = projects || [];
+  state.projects = await _get('projects', 'select=*&order=sort_order').catch(() => _get('projects', 'select=*').catch(() => []));
   if (isOwner()) {
-    const { data: finances, error: fErr } = await sb.from('projects_finance').select('*');
-    console.log('[dfm] finances:', finances?.length ?? 'null', 'error:', fErr?.message);
-    if (fErr) console.error('loadData finance error:', fErr);
-    state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
-    const { data: payments, error: pyErr } = await sb.from('payments').select('*').order('date');
-    console.log('[dfm] payments:', payments?.length ?? 'null', 'error:', pyErr?.message);
-    if (pyErr) console.error('loadData payments error:', pyErr);
-    state.payments = payments || [];
+    const finances = await _get('projects_finance', 'select=*').catch(() => []);
+    state.financeMap = Object.fromEntries(finances.map(f => [f.project_id, f]));
+    state.payments = await _get('payments', 'select=*&order=date').catch(() => []);
   } else {
     state.financeMap = {};
     state.payments   = [];
   }
-  console.log('[dfm] loadData complete');
 }
 
 // ===== Phase helpers =====
