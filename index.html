@@ -174,15 +174,19 @@ sb.auth.onAuthStateChange(async (event, session) => {
 });
 
 async function checkAuth() {
+  console.log('[dfm] checkAuth start');
   const { data: { session } } = await sb.auth.getSession();
+  console.log('[dfm] session:', session ? session.user?.email : 'null');
   if (session) {
     localStorage.setItem('dfm2_role', 'owner');
     document.getElementById('auth-overlay').style.display = 'none';
-    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
+    render();
+    try { await loadData(); } catch(e) { console.error('[dfm] loadData error:', e); }
     render();
   } else if (localStorage.getItem('dfm2_role') === 'engineer') {
     document.getElementById('auth-overlay').style.display = 'none';
-    try { await loadData(); } catch(e) { console.error('[loadData]', e); }
+    render();
+    try { await loadData(); } catch(e) { console.error('[dfm] loadData error:', e); }
     render();
   } else {
     localStorage.removeItem('dfm2_role');
@@ -242,25 +246,31 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
+  console.log('[dfm] loadData start, isOwner:', isOwner());
   let { data: projects, error: pErr } = await sb.from('projects').select('*').order('sort_order');
+  console.log('[dfm] projects:', projects?.length ?? 'null', 'error:', pErr?.message);
   if (pErr) {
     console.warn('sort_order fallback:', pErr.message);
     const res = await sb.from('projects').select('*');
+    console.log('[dfm] projects fallback:', res.data?.length ?? 'null', 'error:', res.error?.message);
     projects = res.data;
     if (res.error) console.error('loadData projects error:', res.error);
   }
   state.projects = projects || [];
   if (isOwner()) {
     const { data: finances, error: fErr } = await sb.from('projects_finance').select('*');
+    console.log('[dfm] finances:', finances?.length ?? 'null', 'error:', fErr?.message);
     if (fErr) console.error('loadData finance error:', fErr);
     state.financeMap = Object.fromEntries((finances || []).map(f => [f.project_id, f]));
     const { data: payments, error: pyErr } = await sb.from('payments').select('*').order('date');
+    console.log('[dfm] payments:', payments?.length ?? 'null', 'error:', pyErr?.message);
     if (pyErr) console.error('loadData payments error:', pyErr);
     state.payments = payments || [];
   } else {
     state.financeMap = {};
     state.payments   = [];
   }
+  console.log('[dfm] loadData complete');
 }
 
 // ===== Phase helpers =====
