@@ -117,34 +117,14 @@ input[readonly] { background: #f5f4f0; color: #666; }
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
 <script>
-// ===== Supabase =====
-const SUPABASE_URL     = 'https://sfvoizvsypkktcsxocez.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmdm9penZzeXBra3Rjc3hvY2V6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzYwNDMzMzAsImV4cCI6MjA5MTYxOTMzMH0.5PX9WDNkqEHxRp8IjPzekCA2ZyQ_5ntOSm5O4NJhXrI';
-const _sbFetch = (url, options = {}) => {
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), 8000);
-  return fetch(url, { ...options, signal: controller.signal }).finally(() => clearTimeout(id));
-};
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: { persistSession: true, autoRefreshToken: false, detectSessionInUrl: true },
-  global: { fetch: _sbFetch }
-});
-// localStorage からトークンを直接取得（Supabase JS 内部のロック問題を回避）
-const _STORAGE_KEY = `sb-${SUPABASE_URL.split('//')[1].split('.')[0]}-auth-token`;
-function _getToken() {
-  try { return JSON.parse(localStorage.getItem(_STORAGE_KEY) || '{}').access_token || SUPABASE_ANON_KEY; }
-  catch { return SUPABASE_ANON_KEY; }
-}
-async function _get(table, query = '') {
-  const res = await _sbFetch(`${SUPABASE_URL}/rest/v1/${table}?${query}`, {
-    headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${_getToken()}` }
-  });
-  if (!res.ok) throw new Error(`${res.status}`);
-  return res.json();
-}
+// ===== Storage =====
+const LS_PROJECTS = 'dfm2_projects';
+const LS_FINANCE  = 'dfm2_finance';
+const LS_PAYMENTS = 'dfm2_payments';
+function lsGet(key)     { try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; } }
+function lsSet(key, val){ localStorage.setItem(key, JSON.stringify(val)); }
 
 // ===== Auth =====
 function isOwner() { return true; }
@@ -166,15 +146,9 @@ let state = { page: 'dashboard', projects: [], payments: [], financeMap: {} };
 
 // ===== Data =====
 async function loadData() {
-  state.projects = await _get('projects', 'select=*&order=sort_order').catch(() => _get('projects', 'select=*').catch(() => []));
-  if (isOwner()) {
-    const finances = await _get('projects_finance', 'select=*').catch(() => []);
-    state.financeMap = Object.fromEntries(finances.map(f => [f.project_id, f]));
-    state.payments = await _get('payments', 'select=*&order=date').catch(() => []);
-  } else {
-    state.financeMap = {};
-    state.payments   = [];
-  }
+  state.projects  = lsGet(LS_PROJECTS) || [];
+  state.financeMap = lsGet(LS_FINANCE)  || {};
+  state.payments  = lsGet(LS_PAYMENTS) || [];
 }
 
 // ===== Phase helpers =====
@@ -646,16 +620,17 @@ function getEditPhases(projectId) {
 async function saveProject(id) {
   const name = document.getElementById('fp-name').value.trim();
   if (!name) { alert('案件名を入力してください'); return; }
-  const finance  = id ? state.financeMap[id] : null;
-  const phases   = getEditPhases(id);
+  const finance   = id ? state.financeMap[id] : null;
+  const phases    = getEditPhases(id);
   const phasesPublic = phases.map(({ id,name,ratio,invoiceNumber,issueDate,dueDate,status }) =>
     ({ id,name,ratio,invoiceNumber,issueDate,dueDate,status })
   );
-  const projectId = id || genId();
-  const sort_order = id ? undefined : (state.projects.length > 0 ? Math.max(...state.projects.map(p => p.sort_order ?? 0)) + 1 : 0);
-  const { error: pErr } = await sb.from('projects').upsert({
-    id: projectId, name,
-    ...(sort_order !== undefined ? { sort_order } : {}),
+  const projectId  = id || genId();
+  const sort_order = id
+    ? (state.projects.find(p=>p.id===id)?.sort_order ?? 0)
+    : (state.projects.length > 0 ? Math.max(...state.projects.map(p => p.sort_order ?? 0)) + 1 : 0);
+  const projectData = {
+    id: projectId, name, sort_order,
     client:          document.getElementById('fp-client').value||'',
     location:        document.getElementById('fp-location').value||'',
     status:          document.getElementById('fp-status').value,
@@ -663,30 +638,43 @@ async function saveProject(id) {
     completion_date: document.getElementById('fp-completionDate').value||null,
     memo:            document.getElementById('fp-memo').value||'',
     phases:          phasesPublic,
-  });
-  if (pErr) { alert('保存に失敗しました'); console.error(pErr); return; }
-  if (isOwner()) {
-    const phasesFinance = {};
-    phases.forEach(ph => { phasesFinance[ph.id] = { fee:ph.fee||0, feeWithTax:ph.feeWithTax||0 }; });
-    const { error: fErr } = await sb.from('projects_finance').upsert({
-      project_id:        projectId,
-      construction_cost: Number(document.getElementById('fp-cost')?.value    || finance?.construction_cost    || 0),
-      fee_rate:          Number(document.getElementById('fp-feeRate')?.value || finance?.fee_rate             || 0),
-      tax_rate:          document.getElementById('fp-taxRate')?.value        || finance?.tax_rate             || '10',
-      phases_finance:    phasesFinance,
-      subcontractors:    getEditSubcontractors(),
-      orders:            getEditOrders(),
-    });
-    if (fErr) { alert('金額情報の保存に失敗しました'); console.error(fErr); return; }
+  };
+  if (id) {
+    const idx = state.projects.findIndex(p=>p.id===id);
+    if (idx >= 0) state.projects[idx] = projectData; else state.projects.push(projectData);
+  } else {
+    state.projects.push(projectData);
   }
-  await loadData(); closeModal(); render();
+  lsSet(LS_PROJECTS, state.projects);
+  const phasesFinance = {};
+  phases.forEach(ph => { phasesFinance[ph.id] = { fee:ph.fee||0, feeWithTax:ph.feeWithTax||0 }; });
+  state.financeMap[projectId] = {
+    ...(finance||{}),
+    project_id:        projectId,
+    construction_cost: Number(document.getElementById('fp-cost')?.value    || finance?.construction_cost    || 0),
+    fee_rate:          Number(document.getElementById('fp-feeRate')?.value || finance?.fee_rate             || 0),
+    tax_rate:          document.getElementById('fp-taxRate')?.value        || finance?.tax_rate             || '10',
+    phases_finance:    phasesFinance,
+    subcontractors:    getEditSubcontractors(),
+    orders:            getEditOrders(),
+  };
+  lsSet(LS_FINANCE, state.financeMap);
+  closeModal(); render();
 }
 
 async function deleteProject(id) {
   if (!confirm('この案件を削除しますか？\n関連する入金記録も削除されます。')) return;
-  const { error } = await sb.from('projects').delete().eq('id', id);
-  if (error) { alert('削除に失敗しました'); return; }
-  await loadData(); render();
+  const proj = state.projects.find(p=>p.id===id);
+  if (proj) {
+    const phaseIds = new Set((proj.phases||[]).map(ph=>ph.id));
+    state.payments = state.payments.filter(p=>!phaseIds.has(p.phase_id));
+    lsSet(LS_PAYMENTS, state.payments);
+  }
+  state.projects = state.projects.filter(p=>p.id!==id);
+  lsSet(LS_PROJECTS, state.projects);
+  delete state.financeMap[id];
+  lsSet(LS_FINANCE, state.financeMap);
+  render();
 }
 
 // ===== Invoices =====
@@ -751,29 +739,24 @@ function peCalcTax() {
 async function savePhaseEdit(projId, phaseId) {
   const proj = state.projects.find(p=>p.id===projId);
   if (!proj) return;
-  const phases = (proj.phases||[]).map(ph => ph.id===phaseId ? {
+  proj.phases = (proj.phases||[]).map(ph => ph.id===phaseId ? {
     ...ph,
     invoiceNumber: document.getElementById('pe-number').value,
     status:        document.getElementById('pe-status').value,
     issueDate:     document.getElementById('pe-issueDate').value,
     dueDate:       document.getElementById('pe-dueDate').value,
   } : ph);
-  const { error: pErr } = await sb.from('projects').update({ phases }).eq('id', projId);
-  if (pErr) { alert('保存に失敗しました'); return; }
-  if (isOwner()) {
-    const fee     = Number(document.getElementById('pe-fee').value||0);
-    const rate    = Number(document.getElementById('pe-taxRate').value||10);
-    const finance = state.financeMap[projId]||{};
-    const { error: fErr } = await sb.from('projects_finance').upsert({
-      project_id: projId,
-      construction_cost: finance.construction_cost||0,
-      fee_rate:          finance.fee_rate||0,
-      tax_rate:          String(rate),
-      phases_finance: { ...(finance.phases_finance||{}), [phaseId]:{ fee, feeWithTax:fee+Math.round(fee*rate/100) } },
-    });
-    if (fErr) { alert('金額情報の保存に失敗しました'); return; }
-  }
-  await loadData(); closeModal(); render();
+  lsSet(LS_PROJECTS, state.projects);
+  const fee     = Number(document.getElementById('pe-fee').value||0);
+  const rate    = Number(document.getElementById('pe-taxRate').value||10);
+  const finance = state.financeMap[projId]||{};
+  state.financeMap[projId] = {
+    ...finance,
+    tax_rate: String(rate),
+    phases_finance: { ...(finance.phases_finance||{}), [phaseId]:{ fee, feeWithTax:fee+Math.round(fee*rate/100) } },
+  };
+  lsSet(LS_FINANCE, state.financeMap);
+  closeModal(); render();
 }
 
 // ===== Payments =====
@@ -850,19 +833,16 @@ async function savePayment(phaseId) {
   const amount = Number(document.getElementById('pp-amount').value||0);
   if (!date||!amount) { alert('入金日と入金額を入力してください'); return; }
   const proj = state.projects.find(p=>(p.phases||[]).some(ph=>ph.id===phaseId));
-  const { error } = await sb.from('payments').insert({
-    id:genId(), phase_id:phaseId, project_id:proj?.id||null, date, amount,
-    memo:document.getElementById('pp-memo').value||'',
-  });
-  if (error) { alert('入金登録に失敗しました'); return; }
-  await loadData(); closeModal(); render();
+  state.payments.push({ id:genId(), phase_id:phaseId, project_id:proj?.id||null, date, amount, memo:document.getElementById('pp-memo').value||'' });
+  lsSet(LS_PAYMENTS, state.payments);
+  closeModal(); render();
 }
 
 async function deletePayment(id) {
   if (!confirm('この入金記録を削除しますか？')) return;
-  const { error } = await sb.from('payments').delete().eq('id', id);
-  if (error) { alert('削除に失敗しました'); return; }
-  await loadData(); render();
+  state.payments = state.payments.filter(p=>p.id!==id);
+  lsSet(LS_PAYMENTS, state.payments);
+  render();
 }
 
 // ===== Calculator =====
@@ -1021,15 +1001,15 @@ function projDrop(e) {
   saveProjectOrder();
 }
 function projDragEnd(e) { _projDragSrc?.classList.remove('ph-dragging'); document.querySelectorAll('#proj-tbody tr').forEach(r=>r.classList.remove('ph-drag-over')); _projDragSrc=null; }
-async function saveProjectOrder() {
+function saveProjectOrder() {
   const tbody = document.getElementById('proj-tbody');
   if (!tbody) return;
   const rows = Array.from(tbody.querySelectorAll('tr[data-proj-id]'));
-  const updates = rows.map((r, i) => ({ id: r.dataset.projId, sort_order: i }));
-  state.projects = updates.map(u => ({ ...state.projects.find(p=>p.id===u.id), sort_order: u.sort_order }));
-  for (const u of updates) {
-    await sb.from('projects').update({ sort_order: u.sort_order }).eq('id', u.id);
-  }
+  rows.forEach((r, i) => {
+    const proj = state.projects.find(p=>p.id===r.dataset.projId);
+    if (proj) proj.sort_order = i;
+  });
+  lsSet(LS_PROJECTS, state.projects);
 }
 
 // ===== Phase Drag & Drop =====
