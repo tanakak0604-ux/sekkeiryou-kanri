@@ -81,18 +81,6 @@ input[readonly] { background: #f5f4f0; color: #666; }
 .info-box { background: #f5f4f0; border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-bottom: 14px; }
 .divider { border: none; border-top: 0.5px solid rgba(0,0,0,0.1); margin: 16px 0; }
 .sub-text { font-size: 11px; color: #888; }
-/* Auth */
-.auth-overlay { display: none; position: fixed; inset: 0; background: #f5f4f0; z-index: 200; align-items: center; justify-content: center; }
-.auth-card { background: #fff; border: 0.5px solid rgba(0,0,0,0.1); border-radius: 16px; padding: 32px; width: 360px; max-width: 95vw; }
-.auth-logo { font-size: 16px; font-weight: 500; margin-bottom: 4px; }
-.auth-sub { font-size: 12px; color: #888; margin-bottom: 24px; }
-.auth-input { display: block; width: 100%; padding: 9px 12px; border: 0.5px solid rgba(0,0,0,0.25); border-radius: 8px; font-size: 13px; margin-bottom: 10px; font-family: inherit; box-sizing: border-box; }
-.auth-input:focus { outline: none; border-color: #185FA5; }
-.auth-btn { display: block; width: 100%; padding: 9px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; text-align: center; border: 0.5px solid rgba(0,0,0,0.25); background: #fff; color: #1a1a18; margin-bottom: 8px; transition: background 0.15s; }
-.auth-btn:hover { background: #f5f4f0; }
-.auth-btn-primary { background: #185FA5; color: #fff; border-color: #185FA5; }
-.auth-btn-primary:hover { background: #0C447C; border-color: #0C447C; }
-.auth-divider { text-align: center; font-size: 12px; color: #aaa; margin: 12px 0; }
 </style>
 </head>
 <body>
@@ -107,16 +95,12 @@ input[readonly] { background: #f5f4f0; color: #666; }
     <div class="nav-item" onclick="switchPage('invoices')"  id="nav-invoices">◻ 請求書一覧</div>
     <div class="nav-item" onclick="switchPage('payments')"  id="nav-payments">◻ 入金管理</div>
     <div class="nav-item" onclick="switchPage('calc')"      id="nav-calc">◻ 報酬計算</div>
-    <div class="nav-item" id="nav-cashflow" onclick="switchPage('cashflow')" style="display:none">◻ キャッシュフロー</div>
+    <div class="nav-item" id="nav-cashflow" onclick="switchPage('cashflow')">◻ キャッシュフロー</div>
   </div>
   <div class="main">
     <div class="topbar">
       <div class="page-title" id="page-title">ダッシュボード</div>
-      <div style="display:flex;align-items:center;gap:8px">
-        <span id="role-badge" style="font-size:12px;color:#888"></span>
-        <div id="topbar-action"></div>
-        <button class="btn btn-sm" onclick="logout()">ログアウト</button>
-      </div>
+      <div id="topbar-action"></div>
     </div>
     <div class="content" id="main-content"></div>
   </div>
@@ -130,14 +114,6 @@ input[readonly] { background: #f5f4f0; color: #666; }
     </div>
     <div class="modal-body" id="modal-body"></div>
     <div class="modal-footer" id="modal-footer"></div>
-  </div>
-</div>
-
-<div class="auth-overlay" id="auth-overlay">
-  <div class="auth-card">
-    <div class="auth-logo">設計料管理</div>
-    <div class="auth-sub">Design Fee Manager</div>
-    <div id="auth-body"></div>
   </div>
 </div>
 
@@ -171,69 +147,7 @@ async function _get(table, query = '') {
 }
 
 // ===== Auth =====
-function isOwner() { return localStorage.getItem('dfm2_role') === 'owner'; }
-
-sb.auth.onAuthStateChange(async (event, session) => {
-  if (event === 'SIGNED_IN') {
-    localStorage.setItem('dfm2_role', 'owner');
-    document.getElementById('auth-overlay').style.display = 'none';
-    await loadData(); render();
-  } else if (event === 'SIGNED_OUT') {
-    localStorage.removeItem('dfm2_role');
-    state.projects = []; state.payments = []; state.financeMap = {};
-    showAuthScreen();
-  }
-});
-
-async function checkAuth() {
-  const { data: { session } } = await sb.auth.getSession();
-  if (session) {
-    localStorage.setItem('dfm2_role', 'owner');
-    document.getElementById('auth-overlay').style.display = 'none';
-    await loadData(); render();
-  } else if (localStorage.getItem('dfm2_role') === 'engineer') {
-    document.getElementById('auth-overlay').style.display = 'none';
-    await loadData(); render();
-  } else {
-    localStorage.removeItem('dfm2_role');
-    showAuthScreen();
-  }
-}
-
-function showAuthScreen() {
-  document.getElementById('auth-overlay').style.display = 'flex';
-  document.getElementById('auth-body').innerHTML = `
-    <input class="auth-input" id="auth-email" type="email" placeholder="メールアドレス" autocomplete="email">
-    <input class="auth-input" id="auth-pw" type="password" placeholder="パスワード" onkeydown="if(event.key==='Enter')loginOwner()" autocomplete="current-password">
-    <button class="auth-btn auth-btn-primary" onclick="loginOwner()">担当者としてログイン</button>
-    <div class="auth-divider">または</div>
-    <button class="auth-btn" onclick="loginEngineer()">エンジニアとして続ける</button>
-    <div id="auth-error" style="color:#A32D2D;font-size:12px;margin-top:4px;text-align:center;min-height:18px"></div>`;
-}
-
-async function loginOwner() {
-  const email = document.getElementById('auth-email')?.value.trim();
-  const pw    = document.getElementById('auth-pw')?.value;
-  const err   = document.getElementById('auth-error');
-  if (!email || !pw) { err.textContent = 'メールアドレスとパスワードを入力してください'; return; }
-  err.textContent = 'ログイン中...';
-  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
-  if (error) err.textContent = 'メールアドレスまたはパスワードが正しくありません';
-}
-
-async function loginEngineer() {
-  localStorage.setItem('dfm2_role', 'engineer');
-  document.getElementById('auth-overlay').style.display = 'none';
-  await loadData(); render();
-}
-
-async function logout() {
-  const wasOwner = isOwner();
-  localStorage.removeItem('dfm2_role');
-  state.projects = []; state.payments = []; state.financeMap = {};
-  if (wasOwner) sb.auth.signOut().catch(() => {}); // fire & forget
-  showAuthScreen();
-}
+function isOwner() { return true; }
 
 // ===== Constants =====
 const DEFAULT_PHASES = [
@@ -316,8 +230,6 @@ function switchPage(p) {
 function render() {
   const titles = { dashboard:'ダッシュボード', projects:'案件管理', invoices:'請求書一覧', payments:'入金管理', calc:'報酬計算', cashflow:'キャッシュフロー' };
   document.getElementById('page-title').textContent  = titles[state.page] || '';
-  document.getElementById('role-badge').textContent  = isOwner() ? '担当者' : 'エンジニア';
-  document.getElementById('nav-cashflow').style.display = isOwner() ? '' : 'none';
   const actionEl  = document.getElementById('topbar-action');
   const contentEl = document.getElementById('main-content');
   if      (state.page === 'dashboard') { actionEl.innerHTML = ''; renderDashboard(contentEl); }
@@ -1144,7 +1056,7 @@ document.getElementById('modal').addEventListener('mousedown', e => { _modalMous
 document.getElementById('modal').addEventListener('click', e => { if (e.target===document.getElementById('modal') && _modalMousedownTarget===document.getElementById('modal')) closeModal(); });
 
 // ===== Init =====
-checkAuth();
+(async () => { await loadData(); render(); })();
 </script>
 </body>
 </html>
